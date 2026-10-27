@@ -1,0 +1,1661 @@
+
+--- PAGE 1 ---
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, MAY 2025
+1
+SDS-Net: Shallow-Deep Synergism-detection Network for infrared
+small target detection
+Taoran Yue, Graduate student Member, IEEE, Xiaojin Lu, Jiaxi Cai, Yuanping Chen, Shibing Chu∗, Society
+Member, IEEE
+All the authors are with School of Physics and Electronic Engineering, Jiangsu University, Zhenjiang, China.
+Abstract—Current CNN-based infrared small target detection
+(IRSTD) methods generally overlook the heterogeneity between
+shallow and deep features, leading to inefficient collaboration
+between shallow fine-grained structural information and deep
+high-level semantic representations. Additionally, the dependency
+relationships and fusion mechanisms across different feature
+hierarchies lack systematic modeling, which fails to fully exploit
+the complementarity of multilevel features. These limitations
+hinder IRSTD performance while incurring substantial compu-
+tational costs. To address these challenges, this paper proposes
+a shallow-deep synergistic detection network (SDS-Net) that
+efficiently models multilevel feature representations to increase
+both the detection accuracy and computational efficiency in
+IRSTD tasks. SDS-Net introduces a dual-branch architecture
+that separately models the structural characteristics and seman-
+tic properties of features, effectively preserving shallow spatial
+details while capturing deep semantic representations, thereby
+achieving high-precision detection with significantly improved
+inference speed. Furthermore, the network incorporates an
+adaptive feature fusion module to dynamically model cross-layer
+feature correlations, enhancing overall feature collaboration and
+representation capability. Comprehensive experiments on three
+public datasets (NUAA-SIRST, NUDT-SIRST, and IRSTD-1K)
+demonstrate that SDS-Net outperforms state-of-the-art IRSTD
+methods while maintaining low computational complexity and
+high inference efficiency, showing superior detection performance
+and broad application prospects. Our code will be made public
+at https://github.com/PhysiLearn/SDS-Net.
+Index Terms—Infrared small target detection, deep and shal-
+low feature, cross attention, feature fusion, deep learning.
+I. Introduction
+I
+NFRARED dim and small target detection (IRSTD) is cru-
+cial for applications such as early warning, traffic manage-
+ment, aerospace, and maritime rescue [1–7]. Unlike visible-
+light imaging, infrared systems capture thermal radiation,
+providing all-weather detection with strong anti-interference
+ability and environmental penetration [8]. Early IRSTD meth-
+ods primarily focused on model-driven approaches, including
+spatial filtering via Top-Hat transforms and Butterworth filters
+to suppress background noise [9], bioinspired vision models
+with multichannel Gabor filters to enhance salient features
+[10, 11], and low-rank/sparse decomposition techniques such
+as RPCA for background isolation [12, 13]. Although effective
+in specific scenarios, these methods rely on hand-crafted
+heuristics, lack semantic understanding, and struggle with
+Shibing Chu∗denotes Corresponding author, email:c@ujs.edu.cn
+All the authors are with School of Physics and Electronic Engineering,
+Jiangsu University, Zhenjiang, China.
+This work gratefully acknowledges the National Natural Science Founda-
+tion of China (No. 11904137, 12074150 and 12174157).
+dynamic backgrounds, limiting their performance in real-world
+conditions.
+With the rise of deep learning and GPU computing, CNN-
+based methods have significantly advanced infrared target de-
+tection. However, bounding box-based localization continues
+to face challenges with small target shapes, boundaries, and
+background noise, leading to performance degradation. Pixel-
+level semantic segmentation has thus become the dominant
+approach in IRSTDs, offering finer target extraction and better
+robustness in complex environments [14].
+Infrared small targets in remote sensing typically present
+three challenges: (1) extremely small size (3×3 to 9×9 pixels,
+0.01% of the image area
+[15]); (2) high shape variability
+influenced by ambient conditions; and (3) low contrast against
+cluttered backgrounds, making them vulnerable to noise [16].
+UNet-based models have effectively addressed these chal-
+lenges. ACM-Net
+[17] uses asymmetric context modulation
+for multilevel fusion; DNA-Net [18] introduces nested inter-
+actions for better representation; and UIU-Net [19] enhances
+multiscale modeling via cross-attention. Despite their success,
+these models focus on local features and lack global context
+modeling, which is critical when targets resemble background
+noise.
+To address this issue, hybrid architectures that integrate
+transformers with U-Net structures have been proposed [20,
+21]. As illustrated in Fig. 1(c)(d), transformer blocks are
+inserted and refine skip connections are refined to enhance
+semantic consistency. While improving target-background sep-
+arability through global-local feature fusion, their quadratic
+complexity poses significant computational challenges.
+Through an in-depth analysis of current mainstream meth-
+ods, we identify three limitations: (1) The loss of fine-
+grained details and the increased computational cost from
+repeated downsampling. Owing to the inherently small size
+of infrared targets, their feature representations are limited.
+Repeated downsampling further degrades spatial resolution,
+eroding critical structural details and weakening cross-layer
+feature interactions. Additionally, high-resolution inputs sig-
+nificantly increase the computational burden. (2) The uni-
+form processing of shallow and deep features limits their
+complementarity. Visualization reveals that shallow layers
+capture local textures vital for localization, whereas deep
+layers encode semantic context for discrimination. Treating
+them uniformly neglects their distinct roles, thereby reducing
+detection effectiveness. Targeted processing is thus essential
+to exploit their complementary strengths. (3) Coarse fusion
+without dependency modeling impairs feature integration.
+arXiv:2506.06042v1  [cs.CV]  6 Jun 2025
+
+
+--- PAGE 2 ---
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, MAY 2025
+2
+Fig. 1. Framework and visualization diagram of representative IRSTD methods.
+Fig. 2. (a). Our SDS-Net is more computationally and memory efficient than the present SOTA methods. (b) The overall efficiency comparison on images of
+resolution 512 × 512, where larger bubbles denote higher GPU memory usage.
+Simple concatenation or weighting fails to account for the
+semantic-structural gap between shallow and deep features,
+leading to ineffective fusion. In small target detection, this
+can cause misalignment and localization errors. Modeling
+bidirectional dependencies is key to achieving coordinated
+structure-semantic integration.
+This paper proposes the Shallow-Deep Synergistic De-
+tection Network (SDS-Net) to address limitations in accu-
+racy, memory usage, and inference speed commonly seen
+in IRSTDs. Inspired by bilateral structures in lightweight
+segmentation models
+[22, 23], SDS-Net adopts a dual-
+branch architecture that integrates shallow and deep path-
+ways. Unlike traditional bilateral designs that use identical
+inputs, SDS-Net introduces a heterogeneous input strategy,
+assigning scale-specific inputs to each branch on the basis
+of their respective roles. This design enables the branches
+to generate complementary features, improving the overall
+detection performance. Additionally, an adaptive feature fusion
+mechanism is further introduced to model interlayer dependen-
+cies while avoiding redundant computations. This enhances
+feature interaction efficiency and representational capacity. As
+shown in Fig. 2(a), SDS-Net achieves faster inference speeds
+than existing methods do, with increasing benefits at higher
+resolutions. Fig. 2(b) shows a 2.5× reduction in GPU memory
+usage compared with that of UIU-Net, saving approximately
+37.4% of the memory per image. Overall, SDS-Net delivers
+a strong balance of accuracy and efficiency, outperforming
+current mainstream approaches. The main contributions of this
+work are summarized as follows:
+1) Shallow-Deep Synergistic Detection Framework: A dual-
+path architecture designed for the IRSTD, where heteroge-
+neous inputs to the shallow and deep branches improve feature
+complementarity and detection accuracy.
+2) Targeted Dual-Branch Design: The shallow branch in-
+corporates multiscale spatial cross-attention (MSCA) and mul-
+tidimensional dynamic fusion attention (MDFA) modules for
+fine-grained detail enhancement, whereas the deep branch uses
+multiscale spatial self-attention (MSSA) and MDFA to balance
+between semantic abstraction and detail preservation.
+3) Adaptive Deep-Shallow Fusion (ADSF): A learnable
+fusion mechanism that dynamically adjusts feature contribu-
+tions, enabling effective hierarchical integration and improving
+discriminability between targets and the background.
+4) Extensive Experimental Validation: Compared with start-
+
+
+--- PAGE 3 ---
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, MAY 2025
+3
+of-the-art methods comprehensive evaluations on three public
+IRSTD datasets demonstrate significant gains in detection
+accuracy, inference speed, and memory efficiency.
+The paper is organized as follows: Section II reviews related
+work. Section III details the SDS-Net framework. Section IV
+presents the experimental results and analysis. Section V
+concludes the paper and discusses future directions.
+II. Related work
+A. Unet-based and multi-scale feature extraction IRSTD meth-
+ods
+The U-Net architecture, proposed by Ronneberger et al.
+[24], features a symmetric encoder-decoder structure with
+skip connections, enabling accurate spatial localization and
+inspiring subsequent work in IRSTD. Dai et al.
+[17] in-
+troduced the asymmetric context modulation (ACM) method,
+which leverages bidirectional feature propagation to validate
+the effectiveness of cross-layer fusion. This strategy has since
+been widely adopted in IRSTD models. ALC-Net [25] uses
+the bottom-up local attention modulation (BLAM) module
+and a parameter-free local contrast module, which enables
+long-range contextual interactions beyond conventional con-
+volutional limits. DNA-Net [18] introduces a densely nested
+interaction module (DNIM) to facilitate progressive fusion
+between low- and high-level features. AGPC-Net [26] designs
+the attention-guided context block (AGCB) to model local cor-
+relations within feature patches, followed by global context at-
+tention (GCA) to capture long-range dependencies. ISNet [27]
+advanced this approach by proposing the two-way oscillatory
+attention aggregation (TOAA) module for cross-scale fusion
+and the texture feature decoder (TFD) for edge enhancement,
+along with the release of the IRSTD-1K dataset to promote
+future research. To address class imbalance, Sun et al. [28]
+developed the receptive field and direction-induced attention
+network (RDIAN), which leverages multiscale receptive fields
+to increase target feature diversity.
+Despite these advancements, UNet-based methods are lim-
+ited by their local receptive fields, making them less effective
+at modeling long-range dependencies, which is crucial for dis-
+tinguishing small targets from complex infrared backgrounds.
+B. UNet-based methods combined with transformer IRSTD
+methods
+Attention mechanisms, as the core component of trans-
+formers, compute inter-element dependencies through dot-
+product operations among queries, keys, and values. This ap-
+proach enables effective global context modeling and parallel
+computation, providing innovative solutions for the IRSTD.
+For example, Qi et al.
+[29] proposed FTC-Net, a hybrid
+UNet–transformer framework where the U-Net branch cap-
+tures local details while the transformer branch leverages
+hierarchical self-attention to model global dependencies and
+suppress background interference. Tong et al.
+[30] intro-
+duced GA-JL, which incorporates a dual-branch detection head
+for multiresolution feature extraction and a guided attention
+module combining spatial and channel attention to enhance
+discriminative features. In MSAFFNet [31], a dual attention
+module (DAM) was designed to refine both shallow spatial
+details and deep semantic features. Huang et al.
+[32] pre-
+sented FDDBA-Net, which applies frequency-domain decou-
+pling with learnable masks to extract target-specific spectra,
+along with a bidirectional attention module for local-global
+feature interaction. Nian et al.
+[33] proposed LCAGNet,
+which introduces a multiscale attentive local contrast module
+(MALC) and a collaborative attention fusion module (MCAF)
+to integrate detail-rich low-level features with abstract high-
+level semantics.
+However, these existing methods treat multilevel features
+uniformly in transformer modules, ignoring their varying
+semantic granularity and representation capabilities. Tailored
+processing of these hierarchical features can better exploit
+their complementary strengths, enhancing both efficiency and
+detection performance.
+C. Deep-Shallow Framework in Vision Tasks
+Recent advances in hierarchical feature modeling emphasize
+the importance of heterogeneous multilevel processing for
+fully exploiting deep and shallow features
+[34, 35]. For
+example, Yang et al.
+[36] proposed SDCL, a transformer-
+based shallow-deep collaborative framework for unsupervised
+visible-infrared person reidentification, which improves cross-
+modal alignment by leveraging low-level structural cues and
+high-level semantics. Cheng et al. [37] introduced DMF²Net
+for heterogeneous remote sensing change detection, combining
+central difference convolution with grayscale-gradient priors to
+enhance spatial detail retention. Guo et al. [38] developed IS-
+DNet for ultrahigh-resolution image segmentation, integrating
+shallow and deep branches through a relation-aware fusion
+module to increase feature discriminability and segmentation
+accuracy.
+These studies demonstrate that the shallow-deep framework
+in vision tasks effectively improves both representation quality
+and computational efficiency. Inspired by these approaches, we
+propose a shallow-deep synergistic detection mechanism for
+IRSTDs that enhances detail sensitivity in the early layers and
+semantic abstraction in the deeper layers, ensuring a robust
+separation between targets and the background.
+III. Method
+This section provides a detailed overview of the proposed
+SDS-Net for infrared small target detection in detail. Section
+III-A describes the overall network architecture. Section III-
+B explores the design of the dual-branch module design,
+specifying the configurations and roles of the shallow and deep
+branches. Section III-C presents the ADSF module, which in-
+tegrates hierarchical features to enhance target representation.
+A. Overall pipeline
+The overall architecture of SDS-Net is illustrated in Fig. 3.
+Its core design employs a three-stage feature fusion strategy to
+progressively integrate shallow-level detail features and deep-
+level semantic information, thereby significantly enhancing the
+detection performance for small targets in infrared images. The
+
+
+--- PAGE 4 ---
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, MAY 2025
+4
+implementation workflow is detailed as follows:
+First, the input image undergoes multiscale feature extrac-
+tion through a backbone network, generating four hierarchical
+feature maps denoted as Xi ∈RCi× H
+i × W
+i , i ∈{1, 2, 3, 4}, where
+the channel dimensions are C1 = 32, C2 = 64, C3 = 128, and
+C4 = 128. To unify the spatial resolution of feature maps, scale
+adjustment is performed via convolutional layers with varying
+kernel sizes and strides (specifically P, P/2, P/4, and P/4).
+This process produces uniformly sized feature representations
+Ei ∈RCi× H
+16 × W
+16 , i ∈{1, 2, 3, 4}. Here, E1, E2, and E3 are routed
+to the shallow feature branch, whereas E4 is directed to the
+deep semantic branch.
+The Feature Mapping (FM) module, a critical component,
+consists of bilinear interpolation, convolutional operations,
+batch normalization, and ReLU activation. This module en-
+hances and fuses high-resolution shallow features with deep
+semantic features, ultimately outputting reconstructed features
+Di ∈RCi× H
+i × W
+i , i ∈{1, 2, 3, 4}.The entire feature processing
+pipeline can be formally expressed as:
+Di = Xi + FMi
+ Shallow Module(E1, E2, E3),
+i ∈{1, 2, 3}
+D4 = X4 + FM4
+ Deep Module(E4)
+(1)
+During the fusion phase, an Adaptive Deep-Shallow Fusion
+(ASDF) module is introduced to enhance feature interaction
+capabilities. This module fuses upsampled deep features or
+fused features from the previous layer with current shallow
+features. The fusion results are further processed through
+the DCBL decoding module, which consists of two sets of
+3 × 3 convolutions, batch normalization, and ReLU activation
+functions. This hierarchical process progressively generates
+fused features Fi, with the specific calculations as follows:
+F3 = DCBL ASDF(D3, upsample(D4))
+Fi = DCBL ASDF(Di, upsample(Fi+1)),
+i ∈{1, 2}
+(2)
+For enhanced training efficiency and prediction accuracy,
+SDS-Net incorporates a multilevel supervision mechanism.
+Mask prediction is applied to the output features Fi (i = 1, 2, 3)
+at each level and the deep feature D4 through 1 × 1 convo-
+lutional layers and sigmoid activation, producing multilevel
+candidate maps Ti. The formulation is expressed as follows:
+Ti = σ(f1×1(Fi)),
+i ∈{1, 2, 3}
+T4 = σ( f1×1(D4))
+(3)
+After upsampling T2, T3, and T4 to the original image
+resolution, all feature maps are concatenated and processed
+through a 1 × 1 convolutional layer followed by sigmoid
+activation (σ) to generate the final fused prediction map T5.
+T5 = σ  f1×1(Concat(T1, B(T2), B(T3), B(T4)))
+(4)
+Herein, B denotes the bilinear interpolation upsampling op-
+eration, and Concat(·) represents the channel-wise concate-
+nation. To achieve multiscale supervised optimization, the
+binary cross-entropy (BCE) loss is computed between all the
+prediction maps and the ground truth (GT) masks, with a
+weighted summation of these terms constituting the final loss
+function.
+O1 = LBCE(T1,G),
+O5 = LBCE(T5,G)
+(5)
+Oi = LBCE(B(Ti),G),
+i ∈{2, 3, 4}
+(6)
+L =
+5
+X
+i=1
+Oi
+(7)
+B. Shallow-Deep Synergistic Detection
+Recently, methods such as UIU-Net, DNA-Net, and ABC-
+Net [39] have made significant strides in suppressing complex
+backgrounds and enhancing small target features in infrared
+imagery. However, these approaches primarily emphasize deep
+semantic extraction while overlooking shallow high-resolution
+details, which often resulting in the attenuation or loss of small
+targets during feature propagation. Recognizing the comple-
+mentary roles of shallow spatial details and deep semantic
+features, this paper introduces a collaborative shallow-deep
+detection framework designed to fully leverage multilevel
+representations fully and improve detection performance.
+To retain fine-grained target information, we propose a
+multi-scale spatial cross-attention (MSCA) module that ex-
+tends traditional cross-attention with multilevel semantic mod-
+eling, enhancing sensitivity to detailed features. Simultane-
+ously, a multi-scale self-attention (MSSA) module enriches
+contextual semantics in deep layers. The fused features are
+further refined by a multidimensional dynamic feature aug-
+mentation (MDFA) module, which adaptively enhances dis-
+criminative capability through dynamic weighting. Detailed
+implementations of these modules are provided in the fol-
+lowing sections. 1) Multiscale Spatial Cross-Attention and
+Self-Attention (MSCA and MSSA). Inspired by the Swin
+Transformer’s
+[15] ability in local-global feature modeling,
+we introduce vertical strip convolutions to enhance long-range
+dependency modeling across windows. This approach employs
+convolutional groups with kernel sizes of (1 × x) and (x × 1)
+to facilitate inter-window information interaction, effectively
+improving long-range spatial dependency representations for
+precisely capturing sparse and faint small target features in
+infrared images.
+As illustrated in Fig. 4, feature connections from x1 to
+both x2 and x3 are achieved through convolutions of length
+equal to the window size. Additionally, dependencies between
+x2 and x3 to x4 are established, with each pixel possessing
+information from other pixels within its respective window,
+thereby facilitating interaction between windows.
+As shown in Fig. 5(a), we first extract multiple shallow
+features E1, E2, E3, where Ei ∈RCi× H
+16 × W
+16 , (i = 1, 2, 3). These
+features are concatenated to obtain the integrated shallow
+feature representation EΣ ∈RCΣ× H
+16 × W
+16 , where CΣ = C1+C2+C3.
+To fully exploit spatial features across scales, all features
+undergo multiscale mapping (MSM), a module comprising
+multiple vertical strip convolution groups designed to establish
+representation capabilities under varying receptive fields. The
+formal implementation is as follows:
+fMAM(X) = δ1×1
+ OC7(LN(X)) + OC11(LN(X)) + OC21(LN(X))
+(8)
+
+
+--- PAGE 5 ---
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, MAY 2025
+5
+Fig. 3.
+Overview of SDS-Net and deep modules for infrared small target detection. SDS-Net adopts a U-shaped deep and shallow layer framework and
+conducts targeted processing through deep and shallow layer modules. The above is the processing procedure diagram of the deep module.
+Fig. 4.
+Vertical Stripe Convolution for Enhanced Window Interaction in
+Feature Maps.
+Here, OCi denotes strip convolutions with kernel sizes of
+1 × k and k × 1, LN(·) represents layer normalization, and
+fMAM(·) signifies the multi-scale mapping operation. Building
+on MSM, we further construct the query (Q), key (K), and
+value (V) matrices required for the attention mechanism.
+KΣ = fMAM(EΣ),
+VΣ = fMAM(EΣ)
+(9)
+The shallow features are mapped to query vectors:
+Qi = fMAM(Ei),
+i ∈{1, 2, 3}
+(10)
+The deep feature E4 undergoes MSM to generate its corre-
+sponding query and key-value pairs:
+Q4, K4, V4 = fMAM(E4)
+(11)
+The shallow features are subsequently fed into the MSCA
+module, whereas the deep features are processed by the MSSA
+module. The specific attention computations are formulated as
+follows:
+Yi = OC1
+ 
+Softmax
+(
+I
+ QiK⊤
+Σ
+λ
+!)
+VΣ
+!
+,
+i ∈{1, 2, 3}
+Y4 = OC1
+ 
+Softmax
+(
+I
+ Q4K⊤
+4
+λ
+!)
+V4
+!
+(12)
+where I(·) denotes the instance normalization operation [?
+], λ is an optional temperature factor, Yi ∈RCi×h×w represents
+the output of MSCA, and Y4 ∈RC4×h×w corresponds to the
+output of MSSA.
+2) Although CBAM-based [40] attention mechanisms have
+shown strong performance in large-scale object detection by
+enhancing channel responses and semantic modeling, their
+ability to localize faint infrared small targets remains limited
+due to insufficient positional information modeling. Existing
+methods [41, 42] often overlook the interplay among posi-
+tional, spatial, and channel dimensions, leading to reduced
+responsiveness in low-contrast conditions.
+To address this challenge, we propose the MDFA module,
+which not only refines the integration strategy of CBAM but
+also incorporates a positional attention module (PAM) to form
+a unified positional-spatial-channel interaction framework. By
+jointly leveraging spatial, channel, and positional cues, this
+design enhances positional sensitivity and enables adaptive
+feature fusion through dynamic weighting, thereby signifi-
+cantly improving detection performance in complex infrared
+scenarios.
+As illustrated in Fig. 5(b), for the input feature Yi ∈RCi×h×w
+and its associated residual branch Ei, we first aggregate them
+via summation before processing through a channel attention
+module (CAM):
+Fci = σ MLP(GAP(Yi + Ei)) + MLP(GMP(Yi + Ei))
+(13)
+where GAP(·) and GMP(·) represent global average pooling
+and max pooling operations, respectively. MLP(·) consists of a
+two-layer fully-connected structure (first layer: C/8 channels,
+second layer: restored to C channels). Subsequently, Fci is fed
+into the spatial attention module (SAM) to obtain the spatially
+enhanced feature Fsi:
+Fsi = f 7×7 DL(GMP(Fci)); DL(GMP(Fci))
+(14)
+
+
+--- PAGE 6 ---
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, MAY 2025
+6
+Fig. 5.
+Shallow-Deep Synergistic Framework. (a) MSCA captures spatial dependencies via shallow feature interactions. MSSA increases deep advanced
+semantic expression (b) MDFA integrates multiscale features to enhance context and geometry.
+Here, f 7×7 indicates a 7 × 7 convolutional kernel with
+dilation rate 4, DL(·) denotes a dense layer, and ‘;’ sig-
+nifies channel-wise concatenation. The spatial feature Fsi
+subsequently enters the Positional Attention Module (PAM),
+generating three reshaped matrices B, Z, D ∈RH×W×C via
+convolution:
+sxy =
+exp(Bx · Zy)
+PN
+x=1 exp(Bx · Zy)
+(15)
+FPi = α
+N
+X
+y=1
+(sxy · Dx) + Fci
+(16)
+The positional output FPi and spatial output Fsi are adaptively
+fused through sigmoid-gated multiplication with Yi, followed
+by ReLU activation:
+X′
+i = ReLU σ(FPi + Fsi) · Yi
+
+(17)
+By enabling dynamic interactions across spatial, positional,
+and channel dimensions, MDFA facilitates multigranularity
+feature integration and adaptive attention modulation. This de-
+sign effectively preserves the global context while significantly
+enhancing the detectability and robustness of small infrared
+targets in complex backgrounds.
+C. Adaptive Deep-Shallow Fusion Module
+Deep–shallow feature fusion is essential for infrared small
+target detection. Shallow features retain fine spatial details but
+are sensitive to noise, while deep features provide semantic
+abstraction but often miss small targets owing to low resolu-
+tion.
+The proposed ADSF module learns cross-level dependen-
+cies and fusion weights, enabling effective complementarity
+between detailed shallow features and semantically rich deep
+features. This enhances both localization and recognition,
+improving detection robustness under complex backgrounds.
+As illustrated in Fig. 6, the input Fs is regarded as the
+shallow feature map, whereas Fd denotes either the upsampled
+deep feature or the hybrid feature map from the preceding
+stage. First, global average pooling (GAP) is applied to both
+shallow and deep features to compress them into channel-wise
+descriptors:
+Us = GAP(Fs),
+Ud = GAP(Fd)
+(18)
+The GAP operation compresses the feature map from
+C × H × W to C × 1 × 1, aggregating the global response
+information per channel. To model local channel interactions
+in shallow features and global channel dependencies in deep
+features while maintaining parameter efficiency, we introduce
+a band matrix B = [b1, b2, . . . , bk] and a diagonal matrix
+D = [d1, d2, . . . , dc] for transforming Us (shallow) and Ud
+(deep), respectively. The shallow and deep channel encodings
+Usc and Udc are defined as:
+Udc =
+k
+X
+i=1
+U ◦bi,
+Usc =
+c
+X
+i=1
+U ◦di
+(19)
+where ◦denotes elementwise multiplication, k is the local
+bandwidth (bandpass channels), and c is the channel dimen-
+sion. These operations, implemented via 1D/2D convolutions,
+refine features through localized band filtering (Udc) and
+channel-wise diagonal modulation (Usc). The compatibility
+between shallow and deep channels is quantified by the
+correlation matrix:
+M = Usc ◦U⊤
+dc
+(20)
+To adaptively regulate information flow, we derive weight
+vectors from M and dynamically fuse features under the
+
+
+--- PAGE 7 ---
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, MAY 2025
+7
+Fig. 6. Adaptive deep-shallow feature fusion.
+guidance of a learnable factor Θ:
+Uw
+sc =
+c
+X
+j
+Mi,j,
+i ∈{1, 2, . . . , c}
+(21)
+Uw
+dc =
+c
+X
+j
+M⊤
+i,j,
+i ∈{1, 2, . . . , c}
+(22)
+W = σ
+
+σ(Θ) × σ(Uw
+sc) + (1 −σ(Θ)) × σ(Uw
+dc)
+
+(23)
+Here, W represents the fusion weights, dynamically balanc-
+ing shallow edge-texture emphasis (Uw
+sc) and deep semantic-
+target prioritization (Uw
+dc) via sigmoid-activated gating σ. The
+fused feature F′ is generated via channel-weighted integration:
+F′ = Concat(Fd, W ⊗Fs)
+(24)
+This strategy minimizes interlayer redundancy while ampli-
+fying cross-hierarchy semantics, achieving superior adaptabil-
+ity and discriminative capability for infrared small targets in
+cluttered environments.
+IV. Experiments and Analysis
+A. Datasets prepare
+In our experiments, we utilized three public datasets:
+NUAA-SIRST [17] (427 images, 256 × 256 pixels), NUDT-
+SIRST
+[18] (1,327 images, 256 × 256 pixels), and IRSTD-
+1K
+[27] (1,001 images, 512 × 512 pixels). All the datasets
+adopt an 8:2 training–test split. Notably, nearly 50% of the
+samples contain targets occupying ≤0.2% of the image area.
+Furthermore, the datasets encompass complex remote sensing
+scenarios (sky, ground, buildings, and sea) with diverse target
+types. This configuration rigorously reflects the challenging
+nature of infrared small target detection.
+B. Experimental details
+All experiments were conducted on a Linux system with
+an Intel Xeon Platinum 8481 CPU, 24 GB RAM, and an
+NVIDIA GeForce GTX 4090 D GPU (CUDA 11.8), using
+the PyTorch framework. The Adam optimizer (β = 0.9) was
+employed with MSE loss, an initial learning rate of 1 × 10−3
+(minimum 1 × 10−5), and a total of 1,000 epochs with cosine
+annealing for learning rate scheduling. Batch sizes were set
+to 4 for NUAA-SIRST/NUDT-SIRST and 16 for IRSTD-1K,
+with a non-maximum suppression (NMS) IoU threshold of
+0.5. SCTransNet was adopted as the baseline model, and no
+pre-trained weights were used.
+To evaluate SDS-Net, we compared it with 12 state-of-the-
+art IRSTD methods (Top-Hat [9], WSLCM [43], IPI [44],
+ACM [17], ALCNet [25], RDIAN [28], ISTDU-Net [45],
+IAANet
+[46], DNA-Net
+[18], UIU-Net
+[19], SCTransNet
+[21]) on three benchmarks. For fairness, all methods were
+retrained with the same dataset and followed the original
+protocols with fixed thresholds.
+C. Evaluation metrics
+The evaluation employs pixel-level metrics (IoU, nIoU) and
+detection metrics (Precision (Pd), Recall (Fa), F-measure),
+supplemented by ROC analysis. Key metrics are defined as
+follows:
+1) IoU:This metric measures the contour alignment be-
+tween the predictions and the ground truth:
+IoU =
+PN
+i=1 TP[i]
+PN
+i=1 (T[i] + P[i] −TP[i])
+(25)
+2) nIoU: Normalized per-sample IoU averaging:
+nIoU = 1
+N
+N
+X
+i=1
+TP[i]
+T[i] + P[i] −TP[i]
+(26)
+3) F1-Score: Harmonic mean of Precision (Prec) and Recall
+(Rec):
+F = 2 × Prec × Rec
+Prec + Rec
+(27)
+
+
+--- PAGE 8 ---
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, MAY 2025
+8
+TABLE I
+Comparisons with SOTA methods on NUAA-SIRST, NUDT-SIRST and IRSTD-1K in IoU(%), nIoU(%), F-measure(%), Pd(%), Fa(10−6).
+Method
+NUAA-SIRST [7]
+NUDT-SIRST [8]
+IRSTD-1K [13]
+mIoU
+nIoU
+F-measure
+Pd
+Fa
+mIoU
+nIoU
+F-measure
+Pd
+Fa
+mIoU
+nIoU
+F-measure
+Pd
+Fa
+Top-Hat [9]
+7.143
+18.27
+14.63
+79.84
+1012
+20.72
+28.98
+33.52
+78.41
+166.7
+10.06
+7.438
+16.02
+75.11
+1432
+WSLCM [43]
+1.158
+6.835
+4.812
+77.95
+5446
+2.283
+3.865
+5.987
+56.82
+1309
+3.452
+0.678
+2.125
+72.44
+6619
+IPI [44]
+25.67
+50.17
+43.65
+84.63
+16.67
+17.76
+15.42
+26.94
+74.49
+41.23
+27.92
+20.46
+35.68
+81.37
+16.18
+ACM [17]
+70.78
+71.85
+78.55
+95.41
+13.14
+61.12
+64.40
+75.47
+94.18
+34.61
+59.23
+57.03
+68.29
+93.27
+65.28
+ALCNet [25]
+70.83
+71.05
+89.07
+94.30
+36.15
+64.74
+67.20
+77.69
+94.18
+34.61
+60.60
+57.14
+71.89
+92.98
+58.80
+RDIAN [28]
+71.99
+76.90
+82.55
+93.54
+43.29
+76.28
+79.14
+85.74
+95.77
+34.56
+56.45
+59.72
+68.89
+88.55
+26.63
+ISTDU [45]
+77.52
+79.73
+91.85
+96.58
+14.54
+89.55
+90.48
+93.85
+97.67
+13.44
+64.36
+63.86
+73.49
+93.60
+53.10
+IAANet [46]
+75.31
+74.65
+84.78
+96.53
+22.70
+90.22
+92.04
+95.01
+97.26
+8.32
+65.25
+64.77
+75.36
+93.15
+14.20
+ISNet [27]
+74.38
+76.82
+83.76
+95.06
+32.76
+85.57
+82.91
+95.78
+97.78
+6.34
+64.36
+65.07
+76.15
+90.24
+31.56
+DNA-Net [18]
+76.14
+81.28
+82.55
+97.24
+26.11
+88.19
+88.58
+94.82
+98.83
+9.00
+65.90
+65.38
+76.42
+90.91
+12.24
+UIU-Net [19]
+80.26
+80.88
+85.63
+98.16
+8.874
+93.48
+93.89
+96.99
+98.31
+7.79
+66.15
+66.66
+78.24
+93.93
+22.07
+SCTransNet [21]
+79.84
+80.24
+87.32
+96.95
+13.92
+94.32
+94.12
+96.95
+98.62
+4.29
+66.33
+66.42
+79.84
+91.27
+10.74
+SDS-Net
+82.26
+82.45
+89.71
+100
+6.57
+95.04
+95.04
+97.46
+99.37
+5.02
+67.74
+66.95
+80.56
+91.92
+10.58
+4) Pd: Ratio of correctly predicted targets (Npred) to total
+targets (Nall):
+Pd = Npred
+Nall
+(28)
+5) False Alarm Rate (Fa): Ratio of falsely detected pixels
+(Nfalse) to total pixels (Pall):
+Fa = Nfalse
+Pall
+(29)
+To address class imbalance, ROC analysis dynamically
+evaluates the Pd-Fa trade-off across varying thresholds, where
+a higher Pd at an equivalent Fa indicates superior performance.
+D. Compared with other SOTA methods
+Comparative experiments with state-of-the-art methods (Ta-
+ble I) demonstrate the superiority of our approach. The pro-
+posed SDS-Net achieves optimal performance across pixel-
+level metrics (mIoU, nIoU, and F-measure) and detection
+metrics (Pd, Fa), surpassing existing infrared small target
+detection methods in quantitative evaluations.
+The experimental results under a multidimensional evalua-
+tion framework demonstrate that traditional methods lag far
+behind deep learning models. Our SDS-Net achieves mIoU
+scores of 82.26%, 95.04%, and 67.74% on three benchmarks.
+This performance is attributed its dual-branch design that ef-
+fectively integrates shallow spatial and deep semantic features
+for precise pixel-level discrimination.
+Table II compares SDS-Net with existing methods on
+IRSTD-1K, covering model size, GFLOPs, inference speed,
+GPU memory, and mIoU. Compared with DNA-Net, SDS-
+Net achieves high accuracy with notable efficiency—reducing
+parameters by 57.5%, FLOPs by 47.8%, and GPU memory by
+58.5% without relying on compression or quantization.
+While not as lightweight as ACM, SDS-Net offers much
+higher accuracy with moderate resource use, suggesting that
+excessive compression can compromises performance. Over-
+all, SDS-Net strikes a strong balance between accuracy and
+efficiency for real-time infrared small target detection under
+TABLE II
+The number of model parameters(M), the number of floating-point
+operations(G), the inference time for each image(S) of different methods, the
+GPU memory usage(M),and mIoU(%) when the batch size is 16 on the
+IRSTD-1K dataset are compared.
+Method
+Params
+Flops
+Inference
+Memory
+mIoU
+ACM [17]
+0.398
+0.402
+0.029
+897
+59.32
+RDIAN [28]
+0.216
+3.718
+0.035
+3331
+65.25
+ISTDU-Net [45]
+2.751
+7.944
+0.039
+10717
+63.74
+ISNet [27]
+0.966
+30.618
+0.058
+15178
+64.36
+UIU-Net [19]
+50.540
+54.425
+0.060
+14747
+66.15
+SCTransNet [21]
+11.19
+20.24
+0.067
+7077
+66.33
+DNA-Net [18]
+4.696
+14.261
+0.050
+9869
+65.90
+SDS-Net (Ours)
+2.701
+6.823
+0.048
+5777
+67.74
+limited resources.
+For a comprehensive evaluation of target detection perfor-
+mance, this work extends beyond conventional fixed-threshold
+metrics (IoU, nIoU, Pd, Fa) by introducing ROC analysis to
+assess model adaptability across thresholds. Fig. 7 benchmarks
+the proposed SDS-Net against state-of-the-art methods. SDS-
+Net excels in ROC performance across three datasets, showing
+rapid TPR escalation in low-FPR regions (0–0.2) for enhanced
+sensitivity, while maintaining > 85% accuracy in high-FPR
+scenarios (>0.5). These results confirm its operational robust-
+ness and practical viability in cluttered infrared environments.
+E. Ablation study
+This section presents ablation studies on the NUAA-SIRST
+dataset using a U-Net baseline. As illustrated in Table III, key
+modules—including RBs, DS, the shallow module, the deep
+module, and ADSF—are added sequentially, each yielding per-
+formance gains. Notably, the shallow module alone improves
+the mIoU, nIoU, and F-measure by 5.85%, 4.66%, and 2.29%,
+respectively, underscoring the value of rich shallow feature
+extraction for accurate detection.
+Ablation studies based on SCTransNet (Table IV, NUAA-
+SIRST) yield steady performance gains with the stepwise
+
+
+--- PAGE 9 ---
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, MAY 2025
+9
+Fig. 7. ROC curves of different methods on the NUAA-SIRST, NUDT-SIRST, and IRSTD-1K datasets. (a) NUAA-SIRST. (b) NUST-SIRST. (c) IRSTD-1K.
+TABLE III
+Ablation experimental results of SDS-Net on the NUAA-SIRST dataset.
+U-Net
++RBs
++DS
++Shallow Module
++Deep Module
++ADSF
+mIoU (%)
+nIoU (%)
+F1-score(%)
+✓
+✗
+✗
+✗
+✗
+✗
+72.45
+73.68
+83.25
+✓
+✓
+✗
+✗
+✗
+✗
+74.26
+75.04
+84.97
+✓
+✓
+✓
+✗
+✗
+✗
+75.01
+76.59
+85.26
+✓
+✓
+✓
+✓
+✗
+✗
+80.86
+81.25
+87.55
+✓
+✓
+✓
+✓
+✓
+✗
+81.37
+81.95
+88.68
+✓
+✓
+✓
+✓
+✓
+✓
+82.26
+82.45
+89.71
+TABLE IV
+Ablation experimental results of SDS-Net on the NUAA-SIRST dataset.
+SCTransNet
++Shallow Module
++Deep Module
++ADSF
+mIoU (%)
+nIoU (%)
+F1-score(%)
+✓
+✗
+✗
+✗
+79.84
+80.24
+87.32
+✓
+✓
+✗
+✗
+80.56
+80.79
+87.45
+✓
+✓
+✓
+✗
+81.32
+81.67
+88.67
+✓
+✓
+✓
+✓
+82.26
+82.45
+89.71
+integration of the shallow module, deep module, and ADSF.
+Adding the shallow module improves the mIoU, nIoU, and F-
+measure by 0.72%, 0.55%, and 0.13%, respectively. The Deep
+Module results in further gains of 0.76%, 0.88%, and 1.22%,
+respectively. Replacing the CCA with ADSF yields additional
+improvements by 0.94%, 0.78%, and 1.04% by modeling
+cross-level dependencies and adaptive fusion weights.
+The next section compares MSCA, MDFA, and ADSF with
+existing IRSTD fusion strategies to validate the effectiveness
+of the proposed shallow–deep collaborative design in capturing
+local details and global semantics and to highlight each
+module’s contribution to performance.
+The following section provides an in-depth analysis of the
+proposed MSCA, MDFA, and ADSF modules, focusing on
+their design principles and functional roles within the overall
+architecture.
+1) The effectiveness of the proposed MSCA module in mul-
+tiscale feature modeling and spatial enhancement is demon-
+strated through comparisons with SSCA (the standard full-
+level interaction module in SCTransNet) and two variants:
+MSCA with multihead attention (MSCA w/MH) and MSCA
+without multiscale mapping (MSCA w/o MSM). The results
+shown in Table V demonstrate that compared with our MSCA,
+MSCA w MH and MSCA w/o MSM exhibit reductions by
+1.70%, 1.66%, 2.26% and 0.94%, 0.78%, 1.04% in mIoU,
+nIoU, and F-measure, respectively, on the NUAA-SIRST
+dataset. This occurs because the multihead strategy compli-
+cates the feature mapping space for infrared small targets,
+hindering information extraction from feature-limited objects.
+Therefore, in SDS-Net, we utilize single-head attention for
+the IRSTD. In contrast, multiscale mapping effectively cap-
+tures target-specific details and potential spatial correlations in
+deep contextual backgrounds. In summary, MSCA minimizes
+missed detections while increasing the confidence of the detec-
+tion process and the advantage of fine-grained representation.
+2) The effectiveness of the proposed MDFA module is
+validated through comparisons with the CFN
+[21], CBAM
+[40], and an ablated variant (MDFA w/o PAM) that removes
+position-aware attention. As shown in Table VI, compared
+with the CBAM baseline method, the MDFA w/o PAM
+achieves overall improvements in comprehensive evaluation
+metrics across two complex datasets by optimizing inter-
+module connection structures. With the further integration
+
+
+--- PAGE 10 ---
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, MAY 2025
+10
+TABLE V
+Comparative experiments of MSCA with mIoU(%)/nIoU(%)/F1 −scores(%)
+of other modules
+Model
+Datasets
+NUAA-SIRST
+NUDT-SIRST
+IRSTD-1K
+SSCA [21]
+79.84/80.24/87.32 94.33/94.12/96.95 66.33/66.42/79.84
+MSCA w MH
+80.42/80.84/88.01 94.17/94.32/97.12 66.45/66.69/79.59
+MSCA w/o MSM 80.19/81.12/88.54 94.38/94.69/97.15 66.45/66.69/79.59
+MSCA
+82.26/82.45/89.71 95.04/95.04/97.46 67.74/66.95/80.56
+TABLE VI
+Comparative experiments of MDFA with
+Params(M)/Flops(G)/mIoU(%)/nIoU(%)/F1 −scores(%) of other modules
+on the NUAA-SIRST and IRSTD-1K datasets.
+Model
+Params
+Flops
+Dataset
+NUAA-SIRST
+NUDT-SIRST
+CFN [21]
+3.849
+7.934
+79.84/80.24/87.32
+66.33/66.42/79.84
+CBAM [40]
+2.498
+6.693
+79.65/79.97/87.46
+66.48/66.46/79.88
+MDFA w/o PAM
+2.532
+6.757
+80.52/80.96/87.41
+66.55/66.59/79.72
+MDFA
+2.701
+6.823
+82.26/82.45/89.71
+67.74/66.95/80.56
+of PAM to construct the complete MDFA framework, the
+object detection performance is significantly enhanced: For
+key metrics in low-contrast scenarios and small object de-
+tection, the two datasets achieve mIoU improvements by
+1.66%/1.19%, nIoU gains by 0.33%/0.36%, and F1-score
+increases of 0.07%/0.64%, respectively. Experiments verify
+that the position-aware module effectively improves the small
+object localization capability and enhances feature discrim-
+inability in low-contrast scenarios through reinforced spatial
+information modeling.
+3) The ADSF module was compared with the CCA,
+CAB, and their ablation variants without learnable factors
+(ADSF w/o LF). As shown in Table VII, compared with
+the former two mainstream feature fusion methods, ADSF
+w/o LF utilizes cross-correlation operations to establish cross-
+layer feature correlations, achieving multi-granularity cross-
+layer dependency modeling with fewer parameters and lower
+computational complexity. This enables the model to optimize
+efficiency while moderately improving core metrics. After
+further introduction of learnable factors, the model achieves
+significant performance improvements on the NUDT-SIRST
+dataset, with the mIoU increasing by 0.91%, the nIoU growing
+by 0.57%, and the F1-score increasing by 0.31%. ADSF
+demonstrates that the dynamic regulatory mechanism effec-
+tively balances fusion weights between shallow spatial details
+and deep semantic information, thereby achieving optimal
+detection accuracy.
+The effectiveness of the shallow and deep modules, along
+with the heterogeneous input strategy, is evaluated on the
+IRSTD-1K dataset (Table VIII). Introducing the shallow mod-
+ule yields a 66.73% mIoU and 80.14% F1 score with minimal
+overhead, outperforming the deep module alone and confirm-
+ing its role in enhancing edge and texture representations. The
+deep module improves robustness to scale and background
+complexity but lacks spatial precision. Their combination
+achieves the best performance (67.74% mIoU, 80.56% F1
+TABLE VII
+Comparative experiments of ADSF with mIoU (%)/nIoU (%)/F1-scores
+(%)/Params(M)/Flops(G) of other modules on the NUDT-SIRST dataset.
+Method
+mIoU
+nIoU
+F1-score
+Params
+Flops
+CCA [21]
+94.32
+94.12
+96.95
+3.268
+8.447
+CAB [47]
+94.55
+93.81
+96.29
+3.692
+10.265
+ADSF w/o LF
+94.13
+94.47
+97.15
+2.419
+6.642
+ADSF
+95.04
+95.04
+97.46
+2.701
+6.823
+score), demonstrating the complementary benefits of structural
+detail from the shallow branch and semantic context from
+the deep branch. The heterogeneous input strategy further
+strengthens this synergy, boosting accuracy and generalization.
+We conducted ablation studies on the impact of varying
+shallow/deep module configurations on model performance
+and complexity (Table IX). As the number of shallow mod-
+ules increases (from 1 to 3), the model’s parameters and
+performance, particularly the mIoU and F1 score, improve,
+highlighting the importance of shallow layers in preserving
+edge and local features.
+The optimal configuration (3 shallow layers, 1 deep layer)
+achieves peak performance (mIoU: 67.74%, F1: 80.56%)
+while maintaining acceptable computational cost. However,
+increasing the number of deep layers (from 1 to 3) leads
+to greater computational overhead and accuracy degradation
+because of the loss of target details from excessive down-
+sampling. These results demonstrate that a balanced shallow-
+deep configuration enhances both model performance and ef-
+ficiency, confirming the effectiveness of synergistic multilevel
+feature learning.
+F. Visual results
+The visual comparison with seven state-of-the-art infrared
+small target detection methods on the NUAA-SIRST, NUDT-
+SIRST, and IRSTD-1K datasets demonstrates the superior
+performance of our method in complex backgrounds (Fig. 8
+and Fig. 9). This advantage is attributed to the dual-branch
+architecture of our shallow-deep synergistic detection network,
+which enables targeted processing of multilevel features. Com-
+pared with other algorithms, it achieves high segmentation
+accuracy while maintaining efficient inference speed.
+As shown in Fig. 8(2), our method successfully segments
+two closely positioned targets, while other deep learning
+approaches either fail to detect the targets or produce frag-
+mented results. This limitation is due to their overreliance
+on deep semantic features, where spatial details are lost
+through repeated downsampling. Furthermore, as shown in
+Fig. 8(3) and Fig. 8(6), only our method and DNA-Net
+avoid false alarms. By effectively modeling the heterogeneous
+relationships between shallow and deep features, our approach
+enables the network to accurately distinguish true targets from
+background noise, even in the presence of strong interference,
+thereby reducing false detections.
+The 3-D visualization of the saliency maps in the figure
+illustrate the detection performance of various methods across
+multiple infrared image samples. As shown in Fig. 9(g),
+
+
+--- PAGE 11 ---
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, MAY 2025
+11
+TABLE VIII
+In the comparison of shallow and deep architecture experiments, D and S represent deep branches and shallow branches, respectively.
+S
+D
+Params(M)
+Flops(G)
+mIoU(%)
+nIoU(%)
+F1-score(%)
+Pd(%)
+Fa(10−6)
+✗
+✓
+1.357
+6.293
+63.53
+63.47
+73.49
+87.61
+23.64
+✓
+✗
+2.008
+6.742
+66.73
+66.32
+80.14
+91.47
+15.18
+✓
+✓
+2.490
+6.788
+67.74
+66.95
+80.56
+91.92
+10.58
+TABLE IX
+Performance comparison under different settings of the number of shallow and deep layers (based on the NUAA-SIRST dataset)
+Shallow-layer Number
+Deep-layer Number
+Params(M)
+Flops(G)
+mIoU(%)
+nIoU(%)
+F1-score(%)
+1
+1
+0.658
+3.006
+76.26
+76.67
+85.57
+2
+1
+1.077
+4.918
+79.59
+80.42
+87.46
+3
+1
+2.701
+6.823
+82.26
+82.45
+89.71
+3
+2
+7.844
+18.424
+81.76
+81.88
+89.13
+3
+3
+22.558
+42.389
+81.56
+81.71
+88.94
+Fig. 8.
+Visual results obtained by different IRSTD methods on the NUAA-SIRST, NUDT-SIRST, and IRSTD-1K datasets. The circles in blue, red, and
+yellow represent correctly detected targets, missed detections, and false alarms, respectively. (a) Input. (b) ACM. (c) ALCNet. (d) DNA-Net. (e) UIU-Net. (f)
+SCTransNet. (g) SDS-Net (Ours). (h) GT.
+our proposed SDS-Net consistently produces responses that
+closely align with the ground truth (Fig. 9(h)). The target
+regions exhibit strong and highly localized activations, while
+background areas remain effectively suppressed. This demon-
+strates the model’s capability for precise small target repre-
+sentation and robust background suppression, highlighting its
+effectiveness in challenging infrared scenarios.
+V. Conclusion
+This paper proposes the SDS-Net to address key challenges
+in infrared small target detection, including detail loss and
+insufficient collaboration between shallow and deep features.
+The network consists of two modules: 1) a shallow module
+for fine-grained spatial details and 2) a deep module for high-
+level semantic features. An ADSF module is introduced to
+dynamically the model interdependencies between hierarchical
+features, enabling effective complementary optimization. The
+experimental results on three benchmark datasets (NUAA-
+SIRST, NUDT-SIRST, and IRSTD-1K) show that SDS-Net
+outperforms current state-of-the-art methods in terms of detec-
+tion performance while maintaining computational efficiency.
+This study demonstrates the complementary and synergistic
+
+
+--- PAGE 12 ---
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, MAY 2025
+12
+Fig. 9.
+3-D visualization of the saliency maps of different methods on six test images. (a) Input. (b) ACM. (c) ALCNet. (d) DNA-Net. (e) UIU-Net. (f)
+SCTransNet. (g) SDS-Net (Ours). (h) GT.
+potential of shallow detail features and deep semantic rep-
+resentations in infrared small target detection. It highlights
+the importance of heterogeneous modeling of feature differ-
+ences across layers and emphasizes the role of cross-layer
+collaborative mechanisms in effectively leveraging multi-level
+feature interactions. These insights provide valuable guidance
+for developing more robust and accurate detection algorithms,
+and lay the groundwork for future architectural designs that
+better exploit the hierarchical and heterogeneous nature of
+deep neural networks.
+References
+[1] H. Zhu, J. Zhang, G. Xu, and L. Deng, “Balanced ring top-hat
+transformation for infrared small-target detection with guided
+filter kernel,” vol. 56, no. 5, pp. 3892–3903.
+[2] T. Zhang, Z. Peng, H. Wu, Y. He, C. Li, and C. Yang,
+“Infrared small target detection via self-regularized weighted
+sparse model,” Neurocomputing, vol. 420, pp. 124–148, 2021.
+[3] R. Lu, X. Yang, W. Li, J. Fan, D. Li, and X. Jing, “Robust
+infrared small target detection via multidirectional derivative-
+based weighted contrast measure,” IEEE Geoscience and Re-
+mote Sensing Letters, vol. 19, pp. 1–5, 2020.
+[4] M. Teutsch and W. Kr¨uger, “Classification of small boats in
+infrared images for maritime surveillance,” pp. 1–7, 2010.
+[5] Y. Sun, J. Yang, and W. An, “Infrared dim and small target
+detection via multiple subspace learning and spatial-temporal
+patch-tensor model,” vol. 59, no. 5, pp. 3737–3752.
+[6] S. S. Rawat, S. K. Verma, and Y. Kumar, “Review on recent
+development in infrared small target detection algorithms,” vol.
+167, pp. 2496–2505.
+[7] P. Wu, H. Huang, H. Qian, S. Su, B. Sun, and Z. Zuo, “Srcanet:
+Stacked residual coordinate attention network for infrared ship
+detection,” vol. 60, pp. 1–14.
+[8] X. Li, Z. Luo, Q. Yang, W. Miao, and S. Zhang, “Airborne
+infrared imaging simulation for target recognition,” vol. 6, pp.
+846–850.
+[9] X. Bai and F. Zhou, “Analysis of new top-hat transformation and
+the application for infrared dim small target detection,” vol. 43,
+no. 6, pp. 2145–2156.
+[10] C. L. P. Chen, H. Li, Y. Wei, T. Xia, and Y. Y. Tang, “A local
+contrast method for small infrared target detection,” vol. 52,
+no. 1, pp. 574–581.
+[11] S. Kim and J. Lee, “Scale invariant small target detection by
+optimizing signal-to-clutter ratio in heterogeneous background
+for infrared search and track,” vol. 45, no. 1, pp. 393–406.
+[12] E. J. Cand`es, X. Li, Y. Ma, and J. Wright, “Robust principal
+component analysis?” vol. 58, no. 3, pp. 11:1–11:37.
+[13] T. Zhou and D. Tao, “Godec: Randomized low-rank & sparse
+matrix decomposition in noisy case,” 2011.
+[14] R. Kou, C. Wang, Z. Peng, Z. Zhao, Y. Chen, J. Han, F. Huang,
+Y. Yu, and Q. Fu, “Infrared small target segmentation networks:
+A survey,” Pattern recognition, vol. 143, p. 109788, 2023.
+[15] X. He, Y. Zhou, J. Zhao, D. Zhang, R. Yao, and Y. Xue, “Swin
+transformer embedding unet for remote sensing image semantic
+segmentation,” vol. 60, pp. 1–15.
+[16] Y.-B. Liu, H.-Y. Huang, and Y.-H. Zeng, “Dc-net: A dual-
+channel and cross-scale feature fusion infrared small target
+detection network,” vol. 62, pp. 1–9.
+[17] Y. Dai, Y. Wu, F. Zhou, and K. Barnard, “Asymmetric contextual
+modulation for infrared small target detection,” pp. 950–959.
+[18] B. Li, C. Xiao, L. Wang, Y. Wang, Z. Lin, M. Li, W. An,
+and Y. Guo, “Dense nested attention network for infrared small
+target detection,” vol. 32, pp. 1745–1758.
+[19] X. Wu, D. Hong, and J. Chanussot, “Uiu-net: U-net in u-net for
+infrared small object detection,” vol. 32, pp. 364–376.
+[20] T. Wu, B. Li, Y. Luo, Y. Wang, C. Xiao, T. Liu, J. Yang,
+W. An, and Y. Guo, “Mtu-net: Multilevel transunet for space-
+based infrared tiny ship detection,” vol. 61, pp. 1–15.
+[21] S. Yuan, H. Qin, X. Yan, N. Akhtar, and A. Mian, “Sctransnet:
+Spatial-channel cross transformer network for infrared small
+target detection,” vol. 62, pp. 1–15.
+[22] C. Yu, C. Gao, J. Wang, G. Yu, C. Shen, and N. Sang, “Bisenet
+v2: Bilateral network with guided aggregation for real-time
+semantic segmentation,” vol. 129, no. 11, pp. 3051–3068.
+[23] C. Yu, J. Wang, C. Peng, C. Gao, G. Yu, and N. Sang,
+
+
+--- PAGE 13 ---
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, MAY 2025
+13
+“Bisenet: Bilateral segmentation network for real-time semantic
+segmentation,” pp. 334–349.
+[24] O. Ronneberger, P. Fischer, and T. Brox, “U-net: Convolutional
+networks for biomedical image segmentation,” pp. 234–241.
+[25] Y. Dai, Y. Wu, F. Zhou, and K. Barnard, “Attentional local
+contrast networks for infrared small target detection,” vol. 59,
+no. 11, pp. 9813–9824.
+[26] T. Zhang, L. Li, S. Cao, T. Pu, and Z. Peng, “Attention-guided
+pyramid context networks for detecting infrared small target
+under complex background,” vol. 59, no. 4, pp. 4250–4261.
+[27] M. Zhang, R. Zhang, Y. Yang, H. Bai, J. Zhang, and J. Guo,
+“Isnet: Shape matters for infrared small target detection,” pp.
+877–886.
+[28] H. Sun, J. Bai, F. Yang, and X. Bai, “Receptive-field and
+direction induced attention network for infrared dim small target
+detection with a large-scale dataset irdst,” vol. 61, pp. 1–13.
+[29] M. Qi, L. Liu, S. Zhuang, Y. Liu, K. Li, Y. Yang, and X. Li,
+“Ftc-net: Fusion of transformer and cnn features for infrared
+small target detection,” vol. 15, pp. 8613–8623.
+[30] Y. Tong, J. Liu, Z. Fu, Z. Wang, H. Yang, S. Niu, and Q. Tan,
+“Guided attention and joint loss for infrared dim small target
+detection,” vol. 62, pp. 1–14.
+[31] X. Tong, S. Su, P. Wu, R. Guo, J. Wei, Z. Zuo, and B. Sun,
+“Msaffnet: A multiscale label-supervised attention feature fu-
+sion network for infrared small target detection,” vol. 61, pp.
+1–16.
+[32] Y. Huang, X. Zhi, J. Hu, L. Yu, Q. Han, W. Chen, and W. Zhang,
+“Fddba-net: Frequency domain decoupling bidirectional inter-
+active attention network for infrared small target detection,”
+vol. 62, pp. 1–16.
+[33] B. Nian, B. Jiang, H. Shi, and Y. Zhang, “Local contrast
+attention guide network for detecting infrared small targets,”
+vol. 61, pp. 1–13.
+[34] B. Rasti, D. Hong, R. Hang, P. Ghamisi, X. Kang, J. Chanussot,
+and J. A. Benediktsson, “Feature extraction for hyperspectral
+imagery: The evolution from shallow to deep: Overview and
+toolbox,” vol. 8, no. 4, pp. 60–88.
+[35] J. Kasai, N. Pappas, H. Peng, J. Cross, and N. Smith, “Deep
+encoder, shallow decoder: Reevaluating non-autoregressive ma-
+chine translation.”
+[36] B. Yang, J. Chen, and M. Ye, “Shallow-deep collaborative learn-
+ing for unsupervised visible-infrared person re-identification,”
+pp. 16 870–16 879.
+[37] W. Cheng, Y. Feng, L. Song, and X. Wang, “Dmf2net: Dynamic
+multi-level feature fusion network for heterogeneous remote
+sensing image change detection,” vol. 300, p. 112159.
+[38] S. Guo, L. Liu, Z. Gan, Y. Wang, W. Zhang, C. Wang, G. Jiang,
+W. Zhang, R. Yi, L. Ma, and K. Xu, “Isdnet: Integrating
+shallow and deep networks for efficient ultra-high resolution
+segmentation,” pp. 4361–4370.
+[39] P. Pan, H. Wang, C. Wang, and C. Nie, “Abc: Attention
+with bilinear correlation for infrared small target detection,” in
+2023 IEEE International Conference on Multimedia and Expo
+(ICME), pp. 2381–2386.
+[40] S. Woo, J. Park, J.-Y. Lee, and I. S. Kweon, “Cbam: Convo-
+lutional block attention module,” in Computer Vision – ECCV
+2018, V. Ferrari, M. Hebert, C. Sminchisescu, and Y. Weiss,
+Eds.
+Springer International Publishing, pp. 3–19.
+[41] C. H. Praharsha and A. Poulose, “Cbam vgg16: An efficient
+driver distraction classification using cbam embedded vgg16
+architecture,” vol. 180, p. 108945.
+[42] H. Zhang, Z. Yang, and N. Lei, “Defect recognition of solar
+panel in efficientnet-b3 network based on cbam attention mech-
+anism,” in Proceedings of the 2024 International Conference
+on Generative Artificial Intelligence and Information Security,
+ser. GAIIS ’24.
+Association for Computing Machinery, pp.
+349–352.
+[43] J. Han, S. Moradi, I. Faramarzi, H. Zhang, Q. Zhao, X. Zhang,
+and N. Li, “Infrared small target detection based on the weighted
+strengthened local contrast measure,” vol. 18, no. 9, pp. 1670–
+1674.
+[44] C. Gao, D. Meng, Y. Yang, Y. Wang, X. Zhou, and A. G. Haupt-
+mann, “Infrared patch-image model for small target detection
+in a single image,” vol. 22, no. 12, pp. 4996–5009.
+[45] Q. Hou, L. Zhang, F. Tan, Y. Xi, H. Zheng, and N. Li, “Istdu-
+net: Infrared small-target detection u-net,” vol. 19, pp. 1–5.
+[46] K. Wang, S. Du, C. Liu, and Z. Cao, “Interior attention-aware
+network for infrared small target detection,” vol. 60, pp. 1–13.
+[47] S. Li, Z. Wang, Z. Liu, C. Tan, H. Lin, D. Wu, Z. Chen,
+J. Zheng, and S. Z. Li. Moganet: Multi-order gated aggregation
+network.

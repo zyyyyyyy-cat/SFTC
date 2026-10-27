@@ -1,0 +1,21 @@
+{
+  "attention": "exact on/off; ZeroV independent formula; query masks; FP32 stats; restoration and eval guard pass",
+  "metrics": "official AP/CMC/mINP agreement; same-camera negative removal; invalid Query alignment; chunk invariance and histograms pass",
+  "model": {
+    "on_max_absolute_error": 0.0,
+    "off_max_absolute_error": 0.0,
+    "all_five_modes_and_two_local_features": "pass",
+    "layer_rows": 240,
+    "complete_state_unchanged": true
+  },
+  "synthetic_cli_end_to_end": {
+    "all_four_experiments": "pass",
+    "all_required_files_present": true,
+    "query_count": 12,
+    "gallery_count": 12,
+    "similarity_rows": 200,
+    "propagation_rows": 480,
+    "cache_reuse_without_reextraction": true,
+    "parameter_and_buffer_values_unchanged": true
+  }
+}

@@ -1,0 +1,229 @@
+{
+  "date_local": "2026-10-13",
+  "synthetic_checks": {
+    "parameters_total_2_ids": 87960268,
+    "parameters_added": 1441764,
+    "parameters_encoder": 260544,
+    "parameters_kv": 1181184,
+    "kv_initialization": "exact independent copies of backbone K/V",
+    "optimizer": "all parameters included exactly once; LR/decay checked",
+    "actual_lr_epoch1_backbone_new": [
+      0.001664,
+      0.004864
+    ],
+    "actual_lr_epoch6_backbone_new": [
+      0.00795085185565579,
+      0.023852358580416892
+    ],
+    "modality_mapping": "training concatenation, one-based eval and reordered folders checked",
+    "shapes": {
+      "f4": [
+        6,
+        64,
+        64,
+        32
+      ],
+      "f8": [
+        6,
+        128,
+        32,
+        16
+      ],
+      "fusion": [
+        6,
+        256,
+        16,
+        8
+      ],
+      "tokens": [
+        6,
+        128,
+        768
+      ],
+      "block": [
+        6,
+        129,
+        768
+      ]
+    },
+    "attention_shape": [
+      6,
+      12,
+      129,
+      257
+    ],
+    "cls_difference_random_weights": {
+      "cosine_distance_mean": 0.0008703470230102539,
+      "relative_l2_mean": 0.04169176518917084
+    },
+    "source_off_equivalence": "bit-exact to same weights with local module removed",
+    "original_backbone_equivalence": "bit-exact to supplied pre-edit backbone",
+    "pretrain": "all backbone keys checked; resized 197->129; missing QKV rejected",
+    "synthetic_loss_and_freeze_checks": [
+      {
+        "epoch": 1,
+        "ce": 0.6924712657928467,
+        "wrt": 3.3447065353393555,
+        "proca": 0.01664859987795353,
+        "gpd": 0.5824999809265137,
+        "bias_min": -2.0,
+        "bias_max": -2.0
+      },
+      {
+        "epoch": 5,
+        "ce": 0.6992666125297546,
+        "wrt": 4.764684677124023,
+        "proca": 0.019717629998922348,
+        "gpd": 0.6924993395805359,
+        "bias_min": -2.0,
+        "bias_max": -2.0
+      },
+      {
+        "epoch": 6,
+        "ce": 0.6849794983863831,
+        "wrt": 3.9764225482940674,
+        "proca": 0.02404797077178955,
+        "gpd": 0.6772306561470032,
+        "bias_min": -2.0000100135803223,
+        "bias_max": -1.9999922513961792
+      }
+    ],
+    "diagnostics": "CNN/KV true update norms and pre-dropout per-sensor/head probabilities checked",
+    "checkpoint": "full load exact; trained local K/V not recopied; baseline checkpoint rejected",
+    "joint_softmax_prior": 0.11838825792074203,
+    "position_encoding": "fixed y/x halves; row-major grid checked",
+    "cpu_bfloat16_autocast": "local source + ViT block forward/backward finite (not CUDA FP16 validation)",
+    "elapsed_seconds": 39.1538896,
+    "runtime": {
+      "torch": "2.8.0+cpu",
+      "device": "cpu",
+      "cuda_available": false
+    }
+  },
+  "cpu_profile": {
+    "runtime": {
+      "torch": "2.8.0+cpu",
+      "device": "cpu",
+      "amp": false,
+      "batch_size": 1,
+      "threads": 4,
+      "identities": 500,
+      "iterations": 10,
+      "warmup": 3
+    },
+    "count_convention": "1 MAC=2 FLOPs; conv, linear, QK/AV matmul and fixed blur only; excludes norm/activation/softmax/elementwise operations",
+    "results": [
+      {
+        "model": "UAD",
+        "parameters_total": 86900968,
+        "parameters_trainable": 86900200,
+        "macs_per_image": {
+          "conv_linear": 11032068096,
+          "attention_matmul": 306726912,
+          "fixed_blur": 0
+        },
+        "macs_per_image_total": 11338795008,
+        "flops_per_image_conv_linear_matmul": 22677590016,
+        "inference_ms_per_batch": 219.54994999999994,
+        "inference_ms_per_image": 219.54994999999994,
+        "cuda_peak_allocated_bytes": null
+      },
+      {
+        "model": "SFTC",
+        "parameters_total": 88342732,
+        "parameters_trainable": 88341964,
+        "macs_per_image": {
+          "conv_linear": 11230871552,
+          "attention_matmul": 332089344,
+          "fixed_blur": 516096
+        },
+        "macs_per_image_total": 11563476992,
+        "flops_per_image_conv_linear_matmul": 23126953984,
+        "inference_ms_per_batch": 204.40292000000005,
+        "inference_ms_per_image": 204.40292000000005,
+        "cuda_peak_allocated_bytes": null
+      }
+    ]
+  },
+  "cpu_bf16_inference_profile": {
+    "runtime": {
+      "torch": "2.8.0+cpu",
+      "device": "cpu",
+      "amp": true,
+      "batch_size": 1,
+      "threads": 4,
+      "identities": 500,
+      "iterations": 2,
+      "warmup": 1
+    },
+    "count_convention": "1 MAC=2 FLOPs; conv, linear, QK/AV matmul and fixed blur only; excludes norm/activation/softmax/elementwise operations",
+    "results": [
+      {
+        "model": "UAD",
+        "parameters_total": 86900968,
+        "parameters_trainable": 86900200,
+        "macs_per_image": {
+          "conv_linear": 11032068096,
+          "attention_matmul": 306726912,
+          "fixed_blur": 0
+        },
+        "macs_per_image_total": 11338795008,
+        "flops_per_image_conv_linear_matmul": 22677590016,
+        "inference_ms_per_batch": 1513.8647000000005,
+        "inference_ms_per_image": 1513.8647000000005,
+        "cuda_peak_allocated_bytes": null
+      },
+      {
+        "model": "SFTC",
+        "parameters_total": 88342732,
+        "parameters_trainable": 88341964,
+        "macs_per_image": {
+          "conv_linear": 11230871552,
+          "attention_matmul": 332089344,
+          "fixed_blur": 516096
+        },
+        "macs_per_image_total": 11563476992,
+        "flops_per_image_conv_linear_matmul": 23126953984,
+        "inference_ms_per_batch": 1602.6575000000003,
+        "inference_ms_per_image": 1602.6575000000003,
+        "cuda_peak_allocated_bytes": null
+      }
+    ]
+  },
+  "baseline_file_comparison": {
+    "WHU/model/backbones/vit_pytorch.py": "modified",
+    "WHU/model/make_model.py": "modified",
+    "WHU/processor/processor.py": "modified",
+    "WHU/solver/make_optimizer.py": "modified",
+    "WHU/config/defaults.py": "modified",
+    "WHU/train.py": "unchanged",
+    "WHU/test.py": "unchanged",
+    "WHU/configs/UAD.yml": "unchanged",
+    "WHU/loss/make_loss.py": "unchanged",
+    "WHU/datasets/make_dataloader.py": "unchanged",
+    "WHU/datasets/sampler_ddp.py": "unchanged",
+    "WHU/utils/metrics.py": "unchanged"
+  },
+  "original_loss_ast_unchanged": {
+    "PCA": true,
+    "PrototypeBank": true,
+    "GPD": true
+  },
+  "ddp_check": {
+    "status": "not_verified",
+    "attempts": 2,
+    "backend": "gloo",
+    "failure_stage": "init_process_group before model construction",
+    "error": "makeDeviceForHostname(): unsupported gloo device",
+    "uv_transport_retry": "same failure",
+    "target_cuda_nccl": "not available"
+  },
+  "not_performed": [
+    "real WHU data loader and retrieval",
+    "official ImageNet/UAD checkpoint loading",
+    "120 epoch training",
+    "CUDA FP16/GradScaler",
+    "NCCL DDP",
+    "training GPU memory measurement"
+  ]
+}

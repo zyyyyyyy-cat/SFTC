@@ -1,0 +1,21 @@
+{
+  "checkpoint_sha256": "dee53843b9603f1cf908eef53ac5d5d65d4ac4d1263b3abd426ca66b27bb3ff4",
+  "features": {
+    "cnn_fused": {
+      "position": "fusion Conv/GN/GELU output before projection and 2D PE",
+      "dimension": 256,
+      "pooling": "mean over H,W"
+    },
+    "local_value": {
+      "position": "trained local_v output; equivalent to merged 12 heads",
+      "dimension": 768,
+      "pooling": "mean over 128 tokens"
+    }
+  },
+  "normalization": "L2",
+  "similarity": "cosine, same-camera excluded for both positive and negative pairs",
+  "histogram": "40 fixed bins on [-1,1]; population std",
+  "labels": "evaluation only; no fitted probe",
+  "query_count": 6405,
+  "gallery_count": 93609
+}

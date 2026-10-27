@@ -1,0 +1,771 @@
+{
+  "samples": 30,
+  "epoch_clip_rows": 10,
+  "logged_loss_rows": 20,
+  "issues": [],
+  "epoch_summary": [
+    {
+      "epoch": 1,
+      "sampled_steps": [
+        1,
+        50,
+        100
+      ],
+      "loss_at_100": {
+        "epoch": 1,
+        "iteration": 100,
+        "steps": 114,
+        "total": 19.219,
+        "acc": 0.009,
+        "base_lr": 0.00666,
+        "ce": 6.2,
+        "wrt": 6.692,
+        "proca": 0.07,
+        "gpd": 6.326,
+        "reconstruction_error": 0.00030000000000196536
+      },
+      "bias_range": [
+        -2.0,
+        -2.0
+      ],
+      "bias_mean_per_sensor": [
+        -2.0,
+        -2.0,
+        -2.0
+      ],
+      "new_lr": 0.019456,
+      "expected_new_lr": 0.019456,
+      "expected_base_lr": 0.006656,
+      "cls_rho_mean": {
+        "RGB": 0.501847161187066,
+        "NIR": 0.4900703430175781,
+        "TIR": 0.4661477406819661
+      },
+      "patch_rho_mean": {
+        "RGB": 0.3603040907118056,
+        "NIR": 0.3462456597222222,
+        "TIR": 0.33668772379557294
+      },
+      "cls_rho_at_100": {
+        "RGB": 0.6644083658854166,
+        "NIR": 0.6488189697265625,
+        "TIR": 0.5850493113199869
+      },
+      "patch_rho_at_100": {
+        "RGB": 0.36151123046875,
+        "NIR": 0.3448842366536458,
+        "TIR": 0.326202392578125
+      },
+      "clip": {
+        "kind": "epoch_clip",
+        "epoch": 1,
+        "rank": 0,
+        "steps": 114,
+        "clip_frequency": 0.9912280701754386,
+        "mean_clip_coefficient": 0.21364237740010605
+      },
+      "global_norm_sampled": [
+        null,
+        7.101757049560547,
+        2.061487913131714
+      ],
+      "gradient_cnn_sampled_mean": 2.70696359872818,
+      "gradient_kv_sampled_mean": 1.0200031846761703,
+      "cnn_relative_update_sampled_mean": 0.0006532785568202161,
+      "kv_relative_update_sampled_mean": 0.00015396766804463307
+    },
+    {
+      "epoch": 2,
+      "sampled_steps": [
+        1,
+        50,
+        100
+      ],
+      "loss_at_100": {
+        "epoch": 2,
+        "iteration": 100,
+        "steps": 114,
+        "total": 12.381,
+        "acc": 0.022,
+        "base_lr": 0.013,
+        "ce": 5.822,
+        "wrt": 0.831,
+        "proca": 0.052,
+        "gpd": 5.728,
+        "reconstruction_error": -0.0005199999999998539
+      },
+      "bias_range": [
+        -2.0,
+        -2.0
+      ],
+      "bias_mean_per_sensor": [
+        -2.0,
+        -2.0,
+        -2.0
+      ],
+      "new_lr": 0.038592,
+      "expected_new_lr": 0.038592,
+      "expected_base_lr": 0.012992,
+      "cls_rho_mean": {
+        "RGB": 0.2999947865804036,
+        "NIR": 0.3096888330247667,
+        "TIR": 0.2826734648810493
+      },
+      "patch_rho_mean": {
+        "RGB": 0.21490648057725695,
+        "NIR": 0.2138120863172743,
+        "TIR": 0.19765133327907985
+      },
+      "cls_rho_at_100": {
+        "RGB": 0.14208285013834634,
+        "NIR": 0.1571496327718099,
+        "TIR": 0.12796258926391602
+      },
+      "patch_rho_at_100": {
+        "RGB": 0.1570409138997396,
+        "NIR": 0.16973368326822916,
+        "TIR": 0.138519287109375
+      },
+      "clip": {
+        "kind": "epoch_clip",
+        "epoch": 2,
+        "rank": 0,
+        "steps": 114,
+        "clip_frequency": 1.0,
+        "mean_clip_coefficient": 0.3231717991781521
+      },
+      "global_norm_sampled": [
+        18.50018882751465,
+        2.404641628265381,
+        3.130018472671509
+      ],
+      "gradient_cnn_sampled_mean": 4.958589414755504,
+      "gradient_kv_sampled_mean": 1.9876905580361683,
+      "cnn_relative_update_sampled_mean": 0.0006066986217877002,
+      "kv_relative_update_sampled_mean": 0.000160021651783485
+    },
+    {
+      "epoch": 3,
+      "sampled_steps": [
+        1,
+        50,
+        100
+      ],
+      "loss_at_100": {
+        "epoch": 3,
+        "iteration": 100,
+        "steps": 114,
+        "total": 10.825,
+        "acc": 0.053,
+        "base_lr": 0.0193,
+        "ce": 5.26,
+        "wrt": 0.7,
+        "proca": 0.116,
+        "gpd": 4.864,
+        "reconstruction_error": -0.00016000000000016001
+      },
+      "bias_range": [
+        -2.0,
+        -2.0
+      ],
+      "bias_mean_per_sensor": [
+        -2.0,
+        -2.0,
+        -2.0
+      ],
+      "new_lr": 0.057728,
+      "expected_new_lr": 0.057728,
+      "expected_base_lr": 0.019328,
+      "cls_rho_mean": {
+        "RGB": 0.07678725984361437,
+        "NIR": 0.09044498867458767,
+        "TIR": 0.07011659940083821
+      },
+      "patch_rho_mean": {
+        "RGB": 0.15776570638020834,
+        "NIR": 0.16905975341796875,
+        "TIR": 0.1415134006076389
+      },
+      "cls_rho_at_100": {
+        "RGB": 0.035041491190592446,
+        "NIR": 0.04318428039550781,
+        "TIR": 0.028115113576253254
+      },
+      "patch_rho_at_100": {
+        "RGB": 0.16336822509765625,
+        "NIR": 0.1655731201171875,
+        "TIR": 0.14681243896484375
+      },
+      "clip": {
+        "kind": "epoch_clip",
+        "epoch": 3,
+        "rank": 0,
+        "steps": 114,
+        "clip_frequency": 1.0,
+        "mean_clip_coefficient": 0.2567216542638006
+      },
+      "global_norm_sampled": [
+        22.02234649658203,
+        4.266385555267334,
+        3.3774468898773193
+      ],
+      "gradient_cnn_sampled_mean": 4.129352271556854,
+      "gradient_kv_sampled_mean": 1.842622384428978,
+      "cnn_relative_update_sampled_mean": 0.0005396498905888094,
+      "kv_relative_update_sampled_mean": 0.00015329166545418154
+    },
+    {
+      "epoch": 4,
+      "sampled_steps": [
+        1,
+        50,
+        100
+      ],
+      "loss_at_100": {
+        "epoch": 4,
+        "iteration": 100,
+        "steps": 115,
+        "total": 9.778,
+        "acc": 0.096,
+        "base_lr": 0.0257,
+        "ce": 4.802,
+        "wrt": 0.656,
+        "proca": 0.176,
+        "gpd": 4.319,
+        "reconstruction_error": -0.0007599999999987617
+      },
+      "bias_range": [
+        -2.0,
+        -2.0
+      ],
+      "bias_mean_per_sensor": [
+        -2.0,
+        -2.0,
+        -2.0
+      ],
+      "new_lr": 0.076864,
+      "expected_new_lr": 0.076864,
+      "expected_base_lr": 0.025664,
+      "cls_rho_mean": {
+        "RGB": 0.03830062018500434,
+        "NIR": 0.0423378414577908,
+        "TIR": 0.024445745680067275
+      },
+      "patch_rho_mean": {
+        "RGB": 0.16764407687717015,
+        "NIR": 0.16560872395833334,
+        "TIR": 0.1531643337673611
+      },
+      "cls_rho_at_100": {
+        "RGB": 0.05133946736653646,
+        "NIR": 0.05982335408528646,
+        "TIR": 0.024396260579427082
+      },
+      "patch_rho_at_100": {
+        "RGB": 0.181610107421875,
+        "NIR": 0.18480428059895834,
+        "TIR": 0.1564788818359375
+      },
+      "clip": {
+        "kind": "epoch_clip",
+        "epoch": 4,
+        "rank": 0,
+        "steps": 115,
+        "clip_frequency": 1.0,
+        "mean_clip_coefficient": 0.2090086264459429
+      },
+      "global_norm_sampled": [
+        21.81244468688965,
+        3.6785454750061035,
+        5.853931427001953
+      ],
+      "gradient_cnn_sampled_mean": 1.6842974225680034,
+      "gradient_kv_sampled_mean": 0.88541080057621,
+      "cnn_relative_update_sampled_mean": 0.0005528001984428203,
+      "kv_relative_update_sampled_mean": 0.00017970850327876013
+    },
+    {
+      "epoch": 5,
+      "sampled_steps": [
+        1,
+        50,
+        100
+      ],
+      "loss_at_100": {
+        "epoch": 5,
+        "iteration": 100,
+        "steps": 114,
+        "total": 8.748,
+        "acc": 0.171,
+        "base_lr": 0.0319,
+        "ce": 4.318,
+        "wrt": 0.649,
+        "proca": 0.218,
+        "gpd": 3.779,
+        "reconstruction_error": -0.00018000000000029104
+      },
+      "bias_range": [
+        -2.0,
+        -2.0
+      ],
+      "bias_mean_per_sensor": [
+        -2.0,
+        -2.0,
+        -2.0
+      ],
+      "new_lr": 0.09558962711037894,
+      "expected_new_lr": 0.09558962711037894,
+      "expected_base_lr": 0.03186339154641701,
+      "cls_rho_mean": {
+        "RGB": 0.03790436850653754,
+        "NIR": 0.0439957512749566,
+        "TIR": 0.03869626257154676
+      },
+      "patch_rho_mean": {
+        "RGB": 0.14827728271484375,
+        "NIR": 0.1535220675998264,
+        "TIR": 0.1507025824652778
+      },
+      "cls_rho_at_100": {
+        "RGB": 0.04842185974121094,
+        "NIR": 0.06136131286621094,
+        "TIR": 0.03014532725016276
+      },
+      "patch_rho_at_100": {
+        "RGB": 0.171722412109375,
+        "NIR": 0.17380269368489584,
+        "TIR": 0.15821329752604166
+      },
+      "clip": {
+        "kind": "epoch_clip",
+        "epoch": 5,
+        "rank": 0,
+        "steps": 114,
+        "clip_frequency": 1.0,
+        "mean_clip_coefficient": 0.1828908923876114
+      },
+      "global_norm_sampled": [
+        28.856462478637695,
+        3.7795815467834473,
+        4.673743724822998
+      ],
+      "gradient_cnn_sampled_mean": 1.8310986757278442,
+      "gradient_kv_sampled_mean": 1.0488108197848003,
+      "cnn_relative_update_sampled_mean": 0.0006772985261382625,
+      "kv_relative_update_sampled_mean": 0.0002325570162067508
+    },
+    {
+      "epoch": 6,
+      "sampled_steps": [
+        1,
+        50,
+        100
+      ],
+      "loss_at_100": {
+        "epoch": 6,
+        "iteration": 100,
+        "steps": 114,
+        "total": 7.671,
+        "acc": 0.234,
+        "base_lr": 0.0318,
+        "ce": 3.873,
+        "wrt": 0.609,
+        "proca": 0.252,
+        "gpd": 3.187,
+        "reconstruction_error": -0.0005199999999998539
+      },
+      "bias_range": [
+        -2.007410764694214,
+        -1.9927793741226196
+      ],
+      "bias_mean_per_sensor": [
+        -2.0007724364598594,
+        -2.001164754231771,
+        -2.001144995292028
+      ],
+      "new_lr": 0.09540943432166757,
+      "expected_new_lr": 0.09540943432166757,
+      "expected_base_lr": 0.03180340742262316,
+      "cls_rho_mean": {
+        "RGB": 0.048019621107313365,
+        "NIR": 0.04909801483154297,
+        "TIR": 0.04548835754394531
+      },
+      "patch_rho_mean": {
+        "RGB": 0.1597103542751736,
+        "NIR": 0.14912584092881945,
+        "TIR": 0.1498836941189236
+      },
+      "cls_rho_at_100": {
+        "RGB": 0.04902966817220052,
+        "NIR": 0.05328559875488281,
+        "TIR": 0.04133033752441406
+      },
+      "patch_rho_at_100": {
+        "RGB": 0.16172281901041666,
+        "NIR": 0.15062459309895834,
+        "TIR": 0.1558380126953125
+      },
+      "clip": {
+        "kind": "epoch_clip",
+        "epoch": 6,
+        "rank": 0,
+        "steps": 114,
+        "clip_frequency": 1.0,
+        "mean_clip_coefficient": 0.19179541218656218
+      },
+      "global_norm_sampled": [
+        29.498037338256836,
+        4.718510627746582,
+        4.147453784942627
+      ],
+      "gradient_cnn_sampled_mean": 1.8593063354492188,
+      "gradient_kv_sampled_mean": 1.0629377861817677,
+      "cnn_relative_update_sampled_mean": 0.0007100142504907859,
+      "kv_relative_update_sampled_mean": 0.000251093496065658
+    },
+    {
+      "epoch": 7,
+      "sampled_steps": [
+        1,
+        50,
+        100
+      ],
+      "loss_at_100": {
+        "epoch": 7,
+        "iteration": 100,
+        "steps": 114,
+        "total": 6.78,
+        "acc": 0.307,
+        "base_lr": 0.0317,
+        "ce": 3.453,
+        "wrt": 0.58,
+        "proca": 0.275,
+        "gpd": 2.744,
+        "reconstruction_error": 0.00025000000000030553
+      },
+      "bias_range": [
+        -2.0120508670806885,
+        -1.9903062582015991
+      ],
+      "bias_mean_per_sensor": [
+        -2.0001916189988456,
+        -2.002574940522512,
+        -2.0021752218405404
+      ],
+      "new_lr": 0.09519677140602778,
+      "expected_new_lr": 0.09519677140602778,
+      "expected_base_lr": 0.031732614363981226,
+      "cls_rho_mean": {
+        "RGB": 0.0480950673421224,
+        "NIR": 0.05320866902669271,
+        "TIR": 0.04919030931260851
+      },
+      "patch_rho_mean": {
+        "RGB": 0.1631401909722222,
+        "NIR": 0.15562269422743055,
+        "TIR": 0.1653866238064236
+      },
+      "cls_rho_at_100": {
+        "RGB": 0.0591424306233724,
+        "NIR": 0.07212320963541667,
+        "TIR": 0.042592366536458336
+      },
+      "patch_rho_at_100": {
+        "RGB": 0.1834716796875,
+        "NIR": 0.18470255533854166,
+        "TIR": 0.17677815755208334
+      },
+      "clip": {
+        "kind": "epoch_clip",
+        "epoch": 7,
+        "rank": 0,
+        "steps": 114,
+        "clip_frequency": 1.0,
+        "mean_clip_coefficient": 0.20506843470461633
+      },
+      "global_norm_sampled": [
+        20.895235061645508,
+        5.59257173538208,
+        4.915655136108398
+      ],
+      "gradient_cnn_sampled_mean": 1.3280957539876301,
+      "gradient_kv_sampled_mean": 0.8515394628047943,
+      "cnn_relative_update_sampled_mean": 0.0007172589332079983,
+      "kv_relative_update_sampled_mean": 0.00026629111953622715
+    },
+    {
+      "epoch": 8,
+      "sampled_steps": [
+        1,
+        50,
+        100
+      ],
+      "loss_at_100": {
+        "epoch": 8,
+        "iteration": 100,
+        "steps": 114,
+        "total": 6.003,
+        "acc": 0.387,
+        "base_lr": 0.0317,
+        "ce": 3.051,
+        "wrt": 0.556,
+        "proca": 0.287,
+        "gpd": 2.393,
+        "reconstruction_error": 0.00012999999999996348
+      },
+      "bias_range": [
+        -2.0141594409942627,
+        -1.9871435165405273
+      ],
+      "bias_mean_per_sensor": [
+        -1.9997584223747253,
+        -2.003560851017634,
+        -2.0028620660305023
+      ],
+      "new_lr": 0.0949517841119992,
+      "expected_new_lr": 0.0949517841119992,
+      "expected_base_lr": 0.03165106088851741,
+      "cls_rho_mean": {
+        "RGB": 0.04194344414605035,
+        "NIR": 0.04844898647732205,
+        "TIR": 0.04652362399631076
+      },
+      "patch_rho_mean": {
+        "RGB": 0.16140916612413195,
+        "NIR": 0.1570248074001736,
+        "TIR": 0.16349962022569445
+      },
+      "cls_rho_at_100": {
+        "RGB": 0.04767735799153646,
+        "NIR": 0.06033007303873698,
+        "TIR": 0.03586641947428385
+      },
+      "patch_rho_at_100": {
+        "RGB": 0.1786041259765625,
+        "NIR": 0.172027587890625,
+        "TIR": 0.16301472981770834
+      },
+      "clip": {
+        "kind": "epoch_clip",
+        "epoch": 8,
+        "rank": 0,
+        "steps": 114,
+        "clip_frequency": 1.0,
+        "mean_clip_coefficient": 0.20369434955268367
+      },
+      "global_norm_sampled": [
+        18.500457763671875,
+        4.872348308563232,
+        3.5591797828674316
+      ],
+      "gradient_cnn_sampled_mean": 1.2137346863746643,
+      "gradient_kv_sampled_mean": 0.715140034755071,
+      "cnn_relative_update_sampled_mean": 0.0007515249851771389,
+      "kv_relative_update_sampled_mean": 0.0002773501684496307
+    },
+    {
+      "epoch": 9,
+      "sampled_steps": [
+        1,
+        50,
+        100
+      ],
+      "loss_at_100": {
+        "epoch": 9,
+        "iteration": 100,
+        "steps": 114,
+        "total": 5.316,
+        "acc": 0.452,
+        "base_lr": 0.0316,
+        "ce": 2.671,
+        "wrt": 0.526,
+        "proca": 0.291,
+        "gpd": 2.117,
+        "reconstruction_error": -0.0009100000000001884
+      },
+      "bias_range": [
+        -2.0209903717041016,
+        -1.9823765754699707
+      ],
+      "bias_mean_per_sensor": [
+        -1.9997315009435017,
+        -2.0054732263088226,
+        -2.0034676690896354
+      ],
+      "new_lr": 0.09467464034163575,
+      "expected_new_lr": 0.09467464034163575,
+      "expected_base_lr": 0.0315588028889101,
+      "cls_rho_mean": {
+        "RGB": 0.04146681891547309,
+        "NIR": 0.043997234768337674,
+        "TIR": 0.052391899956597224
+      },
+      "patch_rho_mean": {
+        "RGB": 0.1522488064236111,
+        "NIR": 0.151336669921875,
+        "TIR": 0.16366746690538195
+      },
+      "cls_rho_at_100": {
+        "RGB": 0.051012674967447914,
+        "NIR": 0.050351460774739586,
+        "TIR": 0.05186144510904948
+      },
+      "patch_rho_at_100": {
+        "RGB": 0.155975341796875,
+        "NIR": 0.15178934733072916,
+        "TIR": 0.16103617350260416
+      },
+      "clip": {
+        "kind": "epoch_clip",
+        "epoch": 9,
+        "rank": 0,
+        "steps": 114,
+        "clip_frequency": 1.0,
+        "mean_clip_coefficient": 0.2198921489849436
+      },
+      "global_norm_sampled": [
+        20.251705169677734,
+        4.546120643615723,
+        3.4695043563842773
+      ],
+      "gradient_cnn_sampled_mean": 1.3716440200805664,
+      "gradient_kv_sampled_mean": 0.8142217000325521,
+      "cnn_relative_update_sampled_mean": 0.0008297397792610172,
+      "kv_relative_update_sampled_mean": 0.0002991476030795904
+    },
+    {
+      "epoch": 10,
+      "sampled_steps": [
+        1,
+        50,
+        100
+      ],
+      "loss_at_100": {
+        "epoch": 10,
+        "iteration": 100,
+        "steps": 114,
+        "total": 4.839,
+        "acc": 0.504,
+        "base_lr": 0.0315,
+        "ce": 2.413,
+        "wrt": 0.515,
+        "proca": 0.297,
+        "gpd": 1.909,
+        "reconstruction_error": -0.0009699999999994713
+      },
+      "bias_range": [
+        -2.022460460662842,
+        -1.9839377403259277
+      ],
+      "bias_mean_per_sensor": [
+        -1.9998643894990284,
+        -2.0057853062947593,
+        -2.0049017568429313
+      ],
+      "new_lr": 0.09436553003543402,
+      "expected_new_lr": 0.09436553003543402,
+      "expected_base_lr": 0.03145590359418384,
+      "cls_rho_mean": {
+        "RGB": 0.042126761542426214,
+        "NIR": 0.04270108540852865,
+        "TIR": 0.048575507269965276
+      },
+      "patch_rho_mean": {
+        "RGB": 0.1435479058159722,
+        "NIR": 0.1377105712890625,
+        "TIR": 0.14786275227864584
+      },
+      "cls_rho_at_100": {
+        "RGB": 0.048383076985677086,
+        "NIR": 0.058193206787109375,
+        "TIR": 0.04916508992513021
+      },
+      "patch_rho_at_100": {
+        "RGB": 0.15472920735677084,
+        "NIR": 0.1569366455078125,
+        "TIR": 0.15630594889322916
+      },
+      "clip": {
+        "kind": "epoch_clip",
+        "epoch": 10,
+        "rank": 0,
+        "steps": 114,
+        "clip_frequency": 1.0,
+        "mean_clip_coefficient": 0.21539819188749923
+      },
+      "global_norm_sampled": [
+        17.264455795288086,
+        4.694001197814941,
+        3.9684996604919434
+      ],
+      "gradient_cnn_sampled_mean": 1.1847062706947327,
+      "gradient_kv_sampled_mean": 0.7344228823979696,
+      "cnn_relative_update_sampled_mean": 0.0008254346109444003,
+      "kv_relative_update_sampled_mean": 0.00030429228945462087
+    }
+  ],
+  "sampled_skips": [
+    {
+      "epoch": 1,
+      "iteration": 1
+    }
+  ],
+  "nonfinite_sampled": [
+    {
+      "epoch": 1,
+      "iteration": 1
+    }
+  ],
+  "largest_loss_reconstruction_error": 0.0010000000000012221,
+  "cls_differences": [
+    {
+      "epoch": 10,
+      "rank": 0,
+      "folder": "RGB",
+      "sample_count": 8,
+      "cosine_distance_mean": 0.05219525098800659,
+      "relative_l2_mean": 0.32368412613868713
+    },
+    {
+      "epoch": 10,
+      "rank": 1,
+      "folder": "IR",
+      "sample_count": 8,
+      "cosine_distance_mean": 0.047782428562641144,
+      "relative_l2_mean": 0.30545639991760254
+    },
+    {
+      "epoch": 10,
+      "rank": 2,
+      "folder": "Thermal",
+      "sample_count": 8,
+      "cosine_distance_mean": 0.08047235012054443,
+      "relative_l2_mean": 0.39920544624328613
+    }
+  ],
+  "partial_validation": [
+    {
+      "q": 1,
+      "g": 1,
+      "r1": 20.94,
+      "map": 12.96,
+      "minp": 2.2
+    },
+    {
+      "q": 1,
+      "g": 2,
+      "r1": 10.3,
+      "map": 6.43,
+      "minp": 0.95
+    },
+    {
+      "q": 1,
+      "g": 3,
+      "r1": 2.72,
+      "map": 2.28,
+      "minp": 0.54
+    }
+  ],
+  "has_overall_validation": false
+}

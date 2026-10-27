@@ -1,0 +1,12 @@
+{"epoch": 10, "rank": 2, "folder": "Thermal", "sample_count": 8, "cosine_distance_mean": 0.08047235012054443, "relative_l2_mean": 0.39920544624328613}
+{"epoch": 20, "rank": 2, "folder": "Thermal", "sample_count": 8, "cosine_distance_mean": 0.08148889243602753, "relative_l2_mean": 0.40183115005493164}
+{"epoch": 30, "rank": 2, "folder": "Thermal", "sample_count": 8, "cosine_distance_mean": 0.08374176919460297, "relative_l2_mean": 0.4060893654823303}
+{"epoch": 40, "rank": 2, "folder": "Thermal", "sample_count": 8, "cosine_distance_mean": 0.08507873117923737, "relative_l2_mean": 0.41280585527420044}
+{"epoch": 50, "rank": 2, "folder": "Thermal", "sample_count": 8, "cosine_distance_mean": 0.08883500844240189, "relative_l2_mean": 0.42130452394485474}
+{"epoch": 60, "rank": 2, "folder": "Thermal", "sample_count": 8, "cosine_distance_mean": 0.06926555186510086, "relative_l2_mean": 0.36895495653152466}
+{"epoch": 70, "rank": 2, "folder": "Thermal", "sample_count": 8, "cosine_distance_mean": 0.07204695791006088, "relative_l2_mean": 0.3777431845664978}
+{"epoch": 80, "rank": 2, "folder": "Thermal", "sample_count": 8, "cosine_distance_mean": 0.08882901072502136, "relative_l2_mean": 0.4196806252002716}
+{"epoch": 90, "rank": 2, "folder": "Thermal", "sample_count": 8, "cosine_distance_mean": 0.08709290623664856, "relative_l2_mean": 0.4152117967605591}
+{"epoch": 100, "rank": 2, "folder": "Thermal", "sample_count": 8, "cosine_distance_mean": 0.09013516455888748, "relative_l2_mean": 0.42097899317741394}
+{"epoch": 110, "rank": 2, "folder": "Thermal", "sample_count": 8, "cosine_distance_mean": 0.08702168613672256, "relative_l2_mean": 0.4144964814186096}
+{"epoch": 120, "rank": 2, "folder": "Thermal", "sample_count": 8, "cosine_distance_mean": 0.08681464195251465, "relative_l2_mean": 0.41419610381126404}

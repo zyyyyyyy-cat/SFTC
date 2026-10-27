@@ -1,0 +1,45 @@
+{
+  "runtime": {
+    "torch": "2.8.0+cpu",
+    "device": "cpu",
+    "amp": true,
+    "batch_size": 1,
+    "threads": 4,
+    "identities": 500,
+    "iterations": 2,
+    "warmup": 1
+  },
+  "count_convention": "1 MAC=2 FLOPs; conv, linear, QK/AV matmul and fixed blur only; excludes norm/activation/softmax/elementwise operations",
+  "results": [
+    {
+      "model": "UAD",
+      "parameters_total": 86900968,
+      "parameters_trainable": 86900200,
+      "macs_per_image": {
+        "conv_linear": 11032068096,
+        "attention_matmul": 306726912,
+        "fixed_blur": 0
+      },
+      "macs_per_image_total": 11338795008,
+      "flops_per_image_conv_linear_matmul": 22677590016,
+      "inference_ms_per_batch": 1513.8647000000005,
+      "inference_ms_per_image": 1513.8647000000005,
+      "cuda_peak_allocated_bytes": null
+    },
+    {
+      "model": "SFTC",
+      "parameters_total": 88342732,
+      "parameters_trainable": 88341964,
+      "macs_per_image": {
+        "conv_linear": 11230871552,
+        "attention_matmul": 332089344,
+        "fixed_blur": 516096
+      },
+      "macs_per_image_total": 11563476992,
+      "flops_per_image_conv_linear_matmul": 23126953984,
+      "inference_ms_per_batch": 1602.6575000000003,
+      "inference_ms_per_image": 1602.6575000000003,
+      "cuda_peak_allocated_bytes": null
+    }
+  ]
+}

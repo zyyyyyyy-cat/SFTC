@@ -1,0 +1,12 @@
+{"epoch": 10, "rank": 1, "folder": "IR", "sample_count": 8, "cosine_distance_mean": 0.047782428562641144, "relative_l2_mean": 0.30545639991760254}
+{"epoch": 20, "rank": 1, "folder": "IR", "sample_count": 8, "cosine_distance_mean": 0.03598349541425705, "relative_l2_mean": 0.2653815746307373}
+{"epoch": 30, "rank": 1, "folder": "IR", "sample_count": 8, "cosine_distance_mean": 0.040727145969867706, "relative_l2_mean": 0.27966833114624023}
+{"epoch": 40, "rank": 1, "folder": "IR", "sample_count": 8, "cosine_distance_mean": 0.04577537626028061, "relative_l2_mean": 0.2978827953338623}
+{"epoch": 50, "rank": 1, "folder": "IR", "sample_count": 8, "cosine_distance_mean": 0.034725889563560486, "relative_l2_mean": 0.260658323764801}
+{"epoch": 60, "rank": 1, "folder": "IR", "sample_count": 8, "cosine_distance_mean": 0.044384002685546875, "relative_l2_mean": 0.2912777066230774}
+{"epoch": 70, "rank": 1, "folder": "IR", "sample_count": 8, "cosine_distance_mean": 0.03869456797838211, "relative_l2_mean": 0.27628713846206665}
+{"epoch": 80, "rank": 1, "folder": "IR", "sample_count": 8, "cosine_distance_mean": 0.054334819316864014, "relative_l2_mean": 0.32531142234802246}
+{"epoch": 90, "rank": 1, "folder": "IR", "sample_count": 8, "cosine_distance_mean": 0.042946018278598785, "relative_l2_mean": 0.2899131178855896}
+{"epoch": 100, "rank": 1, "folder": "IR", "sample_count": 8, "cosine_distance_mean": 0.04608895629644394, "relative_l2_mean": 0.3010507822036743}
+{"epoch": 110, "rank": 1, "folder": "IR", "sample_count": 8, "cosine_distance_mean": 0.0440266877412796, "relative_l2_mean": 0.29506295919418335}
+{"epoch": 120, "rank": 1, "folder": "IR", "sample_count": 8, "cosine_distance_mean": 0.043684691190719604, "relative_l2_mean": 0.29374462366104126}

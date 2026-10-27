@@ -1,0 +1,15 @@
+{
+  "checkpoint_sha256": "dee53843b9603f1cf908eef53ac5d5d65d4ac4d1263b3abd426ca66b27bb3ff4",
+  "metadata_sha256": "71a7f1aa5eb309dbac59f97724aeb4cbb5519784fb55c56d59db359093b18a8d",
+  "config": "DATALOADER:\n  NUM_INSTANCE: 4\n  NUM_WORKERS: 8\n  SAMPLER: PKM\nDATASETS:\n  DATASET_DIR: WHU-MARS\n  FILTER_GD: False\n  MODALITIES: ('RGB', 'IR', 'Thermal')\n  NAMES: WHU-MARS\n  ROOT_DIR: /project/code/data\nINPUT:\n  PADDING: 10\n  PIXEL_MEAN: [0.5, 0.5, 0.5]\n  PIXEL_STD: [0.5, 0.5, 0.5]\n  PROB: 0.5\n  RE_PROB: 0.5\n  SIZE_TEST: [256, 128]\n  SIZE_TRAIN: [256, 128]\nMODEL:\n  ATT_DROP_RATE: 0.0\n  COS_LAYER: False\n  DEVICE: cuda\n  DEVICE_ID: 0\n  DEVIDE_LENGTH: 4\n  DIST_TRAIN: False\n  DROP_OUT: 0.0\n  DROP_PATH: 0.1\n  GPD_MOMENTUM: 0.2\n  ID_LOSS_TYPE: softmax\n  ID_LOSS_WEIGHT: 1.0\n  IF_LABELSMOOTH: off\n  IF_WITH_CENTER: no\n  JPM: False\n  LAST_STRIDE: 1\n  METRIC_LOSS_TYPE: wrt\n  NAME: transformer\n  NECK: bnneck\n  NO_MARGIN: True\n  PCA_LOSS_WEIGHT: 0.01\n  PRETRAIN_CHOICE: imagenet\n  PRETRAIN_PATH: jx_vit_base_p16_224-80ecf9dd.pth\n  RE_ARRANGE: True\n  SHIFT_NUM: 5\n  SHUFFLE_GROUP: 2\n  SIE_CAMERA: False\n  SIE_COE: 3.0\n  SIE_VIEW: False\n  STRIDE_SIZE: [16, 16]\n  TRANSFORMER_TYPE: vit_base_in\n  TRIPLET_LOSS_WEIGHT: 1.0\nOUTPUT_DIR: ./logs/UAD_SFTC_V2_1_1000\nSFTC:\n  BLOCK_INDEX: 6\n  CNN_CHANNELS: [32, 64, 128]\n  DIAGNOSTICS: True\n  EMBED_DIM: 768\n  ENABLED: True\n  LOCAL_GRID: [16, 8]\n  NEW_LR_MULT: 3.0\n  POS_SCALE: 0.1\n  SOURCE_BIAS_FIXED_EPOCHS: 5\n  SOURCE_BIAS_INIT: -2.0\n  TEST_LOCAL_ENABLED: True\nSOLVER:\n  BASE_LR: 0.008\n  BIAS_LR_FACTOR: 2\n  CENTER_LOSS_WEIGHT: 0.0005\n  CENTER_LR: 0.5\n  CHECKPOINT_PERIOD: 120\n  COSINE_MARGIN: 0.5\n  COSINE_SCALE: 30\n  EVAL_PERIOD: 10\n  GAMMA: 0.1\n  GRAD_CLIP_NORM: 1.0\n  IMS_PER_BATCH: 64\n  LARGE_FC_LR: False\n  LOG_PERIOD: 50\n  LOSS_TYPE: base+pca+gpd\n  MARGIN: 0.3\n  MAX_EPOCHS: 120\n  MOMENTUM: 0.9\n  OPTIMIZER_NAME: SGD\n  SEED: 1234\n  STEPS: (40, 70)\n  WARMUP_EPOCHS: 5\n  WARMUP_FACTOR: 0.01\n  WARMUP_METHOD: linear\n  WEIGHT_DECAY: 0.0001\n  WEIGHT_DECAY_BIAS: 0.0001\nTEST:\n  DETAILED_DOMAIN_EVAL: False\n  DIST_MAT: dist_mat.npy\n  EVAL: False\n  FEAT_NORM: yes\n  IMS_PER_BATCH: 512\n  NECK_FEAT: before\n  RE_RANKING: False\n  TOP_K_EVAL: 0\n  WEIGHT: ",
+  "code_sha256": {
+    "diagnose_sftc.py": "3cd442317513523df312b1bc16d30c0bf9dcdf3f00a6bcb01886b76b2f9306be",
+    "utils/sftc_inference_probe.py": "6681157f3220b48973ca612126480ca753f83971d9b03d36fce469c840163101",
+    "utils/sftc_probe_metrics.py": "5cc4908b20c311bfc6736f2711f2f1be0bf2b0d51b9a7809f4c16daaca9e0271",
+    "model/make_model.py": "841aff6f84cdd0cb3e64d46a0f4a8c7f555170e42268a2e8ec7de23e94d71d1e",
+    "model/backbones/vit_pytorch.py": "6e322d24dc1487e9880844a758ab9e0b19525d83c2bf1bc16aef8e4a95385b11",
+    "model/backbones/sftc_local.py": "e2cfc0a1f69800fa0715d37b92a7a2b81203a3d14ef4337b22d0fcd3bbefbe92",
+    "datasets/whu_mars.py": "e2d3ec02764d46473afab322cd2e52422efd4a316c5f9f230f56d0d5b7dfd91d",
+    "datasets/bases.py": "37f311e15a9ec7496ba985c4a6ac77fae735d6ae047ec572f411932b97250b9e"
+  }
+}

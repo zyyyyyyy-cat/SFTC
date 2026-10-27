@@ -1,0 +1,1987 @@
+
+--- PAGE 1 ---
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021
+1
+Multi-scale Semantic Correlation Mining for
+Visible-Infrared Person Re-Identification
+Ke Cheng, Xuecheng Hua, Hu Lu, Juanjuan Tu, Yuanquan Wang, Shitong Wang
+Abstract—The main challenge in the Visible-Infrared Person
+Re-Identification (VI-ReID) task lies in how to extract discrimi-
+native features from different modalities for matching purposes.
+While the existing well works primarily focus on minimizing
+the modal discrepancies, the modality information can not
+thoroughly be leveraged. To solve this problem, a Multi-scale
+Semantic Correlation Mining network (MSCMNet) is proposed
+to comprehensively exploit semantic features at multiple scales
+and simultaneously reduce modality information loss as small as
+possible in feature extraction. The proposed network contains
+three novel components. Firstly, after taking into account the
+effective utilization of modality information, the Multi-scale
+Information Correlation Mining Block (MIMB) is designed to
+explore semantic correlations across multiple scales. Secondly, in
+order to enrich the semantic information that MIMB can utilize,
+a quadruple-stream feature extractor (QFE) with non-shared
+parameters is specifically designed to extract information from
+different dimensions of the dataset. Finally, the Quadruple Center
+Triplet Loss (QCT) is further proposed to address the information
+discrepancy in the comprehensive features. Extensive experiments
+on the SYSU-MM01, RegDB, and LLCM datasets demonstrate
+that the proposed MSCMNet achieves the greatest accuracy.
+We have released the source code on https://github.com/Hua-
+XC/MSCMNet.
+Index Terms—Visible-infrared person re-identification, person
+re-identification, semantic correlation, multiple-scales.
+I. INTRODUCTION
+P
+ERSON re-identification (ReID) [1], [2] is a technology
+aimed at retrieving and identifying individuals in person
+images captured by non-overlapping cameras. With the in-
+creasing emphasis on public safety, all-weather surveillance
+and retrieval systems have garnered significant attention in
+the field of computer vision. Existing ReID methods primarily
+focus on retrieving information between RGB images [3], [4].
+However, apart from bright daylight scenarios, the majority of
+online surveillance occasions should be during the night and
+under low lighting conditions. Therefore, the models designed
+for visible modality are inadequate for conducting image
+retrieval in low-light conditions. To address this issue, many
+(Corresponding authors: Hu Lu and Shitong Wang.)
+Ke Cheng, Xuecheng Hua and Juanjuan Tu are with the School of
+Computer, Jiangsu University of Science and Technology, Zhenjiang 212100,
+China (e-mail:chengke1972@just.edu.cn; huaxuecheng8888@gmail.com; ec-
+situ@126.com).
+Hu
+Lu
+is
+with
+the
+School
+of
+Computer
+Science
+and Communi-
+cation
+Engineering,
+Jiangsu
+University,
+Zhenjiang
+212013,
+China
+(e-
+mail:luhu@ujs.edu.cn).
+Yuanquan
+Wang
+is
+with
+the
+School
+of
+Artificial
+Intelligence,
+Hebei
+University
+of
+Technology,
+Tianjin
+300401,
+China
+(e-
+mail:wangyuanquan@scse.hebut.edu.cn).
+Shitong Wang is with the School of Digital Media, Jiangnan University,
+Wuxi 214122, China (e-mail:wxwangst@aliyun.com).
+No，I see
+strong leg 
+I see
+blue 
+ No，I see
+strong
+people 
+No，I see
+man 
+may be
+green
+bag
+I see
+ bag strap 
+No，I see
+cute man 
+MIM
+Block
+Shallow semantics
+feature
+Deep semantics
+feature
+Muti
+Scale
+On same scale 
+We don't know what is it 
+On same scale 
+We don't know what is it 
+OK，comprehensive features :
+man   strong   bag   leg  · · · · · ·
+RGB
+RGB
+may be
+green
+ T-shirt
+IR
+IR
+Augment
+Augment
+Fig. 1. Motivation: Due to the semantic misalignment between features within
+the same layer of the network, some valuable modality information cannot be
+utilized. However, the correlation of this semantic information can be explored
+at multiple scales, which enables the extraction of more comprehensive
+personal features. Therefore, conducting a multi-scale exploration of valuable
+semantic information is crucial. Our MSCMNet effectively achieves this
+objective.
+all-weather surveillance systems incorporate infrared cameras
+to capture scenes in low-light environments. Nevertheless, the
+longer wavelength and increased scattering of infrared light
+result in the loss of color, texture, and detail information
+that is commonly present in visible images. This results in
+substantial discrepancies in the cross-modal. Additionally, in
+the same modality, there are variations in camera viewpoints,
+pedestrian clothing, and occlusion scenarios. [5]. All of these
+factors present significant challenges for VI-ReID.
+Currently, the main challenges faced by the existing models
+can be categorized into three aspects: 1) The infrared modality
+lacks color, texture, and other detailed information, making it
+difficult to fully extract modal-shared features from the visible
+modality, which contains more comprehensive information. 2)
+During the process of feature extraction, modality information
+loss occurs, making it challenging for the network to make
+full use of the information within the dataset. 3) Significant
+variations in poses, attire, and backgrounds for the same
+identity under different cameras further hinder the extraction
+of effective and robust features.
+Existing outstanding works have been proposed in VI-ReID,
+mainly concentrated on utilizing a dual-stream network to
+extract the cross-modal shared features. Specifically, there are
+many works using data augmentation for RGB images or
+generating auxiliary modality to eliminate the impact of effects
+such as color and details on the visible images. This approach
+enables the network to focus on characteristic features, such as
+body shape and person outline, minimizing the discrepancies
+arXiv:2311.14395v2  [cs.LG]  1 Apr 2025
+
+
+--- PAGE 2 ---
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021
+2
+between visible and infrared images. While these methods can
+effectively handle the differences between modalities, they
+still cannot avoid the loss of valuable information during
+the feature extraction process. The lost information typically
+represents modality-specific features. They are temporarily
+invaluable at the same scale due to semantic inconsistencies.
+However, As shown in Fig. 1, as modality information is
+extracted in deep networks, the possibility arises that lost
+modality-specific semantic information in shallow layers can
+be utilized in deep layers. Therefore, the ability to take
+advantage of all information contained within cross-modality
+has become more and more important for evaluating the
+performance of the model.
+Furthermore, in comparison to existing multi-scale ap-
+proaches, our work innovatively considers the deep exploration
+of modality information and designs a novel structure that
+utilizes multiple-scale features, which enables the extraction
+of more comprehensive features.
+Concretely, we propose a novel deep learning framework
+named Multi-scale Semantic Correlation Mining Network
+(MSCMNet). This network is composed of Quadruple-Stream
+Feature Extractors (QFE) and Multi-scale Information Corre-
+lation Mining Block (MIMB). The innovative QFE captures
+modality features from channel augmented dimensions and
+image global dimensions in the way of non-shared parameters.
+In addition, it performs feature fusion during testing. We apply
+channel augmentation techniques to expand the dimensions
+of RGB [6] and IR images. Then, the proposed Multi-scale
+Information Correlation Mining Block (MIMB) effectively
+addresses the issue of valuable modality information missing
+during feature extraction. Moreover, it mines the potential cor-
+relations between different stream features at multiple scales
+and explores implicit semantic correlation among cross-modal
+features. Finally, we design the Quadruple-Center Triplet
+Loss (QCT) as a novel learning objective that enhances the
+comprehensiveness of modality-shared features within multi-
+dimensional feature spaces.
+The contributions of our work are summarized as follows:
+• A novel deep learning framework (MSCMNet) is pro-
+posed to focus on extracting comprehensive modality
+features.
+• There are two modules in the proposed MSCMNet. 1)
+The QFE is enabled to extract broader semantic informa-
+tion. 2) The MIMB explores the correlations of semantic
+information across muti-scales and effectively reduces
+information loss during the feature extraction process.
+• A novel Quadruple Center Triplet Loss is coined to han-
+dle the semantic information discrepancy within cross-
+modal features.
+• Our proposed MSCMNet outperforms other state-of-the-
+art methods in the VI-RelD task, as demonstrated by
+extensive evaluations on the SYSU-MM01, RegDB, and
+LLCM datasets.
+The remainder of this paper is organized as follows: some
+works related to person re-identification and visible infrared
+person ReID are introduced briefly in Section II, and the
+details of the proposed MSCMNet are presented in Section III.
+Following that, experiment settings and experimental results
+are reported in Section IV. Finally, the conclusion is drawn in
+Section V.
+II. RELATED WORK
+A. Person Re-identification
+Person re-identification aims to match person images cap-
+tured by different cameras during daylight. With the emer-
+gence of deep convolutional neural networks (CNNs), there
+has been a great effort in this field to design effective loss
+functions [3], [4], [7]–[9]. These loss functions are crafted
+to constrain features and enforce relationships between in-
+dividuals of distinct identities, employing various strategies
+such as triplet constraints [10], quadruplet constraints [11],
+and group consistency constraints [12]. These methods, which
+learn features from entire person images, often encounter chal-
+lenges from intra-modal variations, specifically those induced
+by changes in human body posture and partial occlusion [13].
+As a result, alternative approaches have arisen to address these
+issues. Some of these methods focus on fine-grained person
+image descriptions, achieved by either partitioning body parts
+uniformly [4], [13]–[16] or employing attention mechanisms
+[17]–[20]. Moreover, certain strategies incorporate both local
+and global information to enhance performance [1], [2], [21].
+However, the practical reality is that most cameras transition
+between visible and infrared modalities during both day and
+night. Owing to the significant cross-modal disparities, the effi-
+cacy of single-modal solutions is severely compromised in the
+context of VI-ReID tasks, leading to suboptimal generalization
+performance.
+B.
+Visible-Infrared Person ReID
+In addressing the challenge of cross-modal discrepancy,
+Zero-Padding [5] embarked on a pioneering effort by introduc-
+ing a zero-padding single-stream network and contributing to
+the SYSU-MM01 dataset. Dual-Stream network [22] designed
+to match facial images under two different models. Some
+methods based on metric learning [23], [24], which introduced
+the Heterogeneous Center (HC) loss to mitigate modality gaps
+[24] and [23] further devised the Heterogeneous Center Triplet
+loss. At the same time, [25]–[27] Combining global and local
+information for fine-grained learning. Furthermore, the method
+based on GAN and data augmentation is dedicated to reducing
+the discrepancy between cross-modality [28]–[30]. [6], [31],
+[32] based on auxiliary modalities and data augmentation.
+[31]introducing an auxiliary X-modality. [32] eliminating the
+influence of RGB color information. Effective data augmenta-
+tion techniques [6] and some Multi-scale exploration work was
+proposed [33]–[35], but those works inadequately considered
+the disparities in channel augmentation and images during the
+process of feature extraction. One of the motivations for our
+work is to take full advantage of the semantic information
+discrepancy brought by different data augmentation in the
+same modality. In addition, there are some advanced works.
+The transformer framework was employed in [36]–[39]. DEEN
+[40] generates diverse features to learn rich information feature
+representations for bridging cross-modal disparities. However,
+the feature generation of DEEN via convolution makes it
+
+
+--- PAGE 3 ---
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021
+3
+Base
+layer3
+Base
+layer4
+Glober
+extractor V
+Channel
+extractor V
+Global
+extractor T
+Channel
+extractor T
+RGB
+IR
+Feature
+ fuse
+Base
+layer1
+Base
+layer2
+ALB(1)
+ALB(2)
+ALB(3)
+ALB(4)
+RGB glober feature
+RGB channel feature
+IR channel feature
+Feature
+ fuse
+center of feature
+visible feature
+visible channel feature
+thermal glober feature
+thermal channel feature
+contain sample of same id
+RGB
+Image
+RGB
+Channel
+Augment
+IR
+Image
+IR
+Channel
+Augment
+Multi-scale information
+correlation mining block
+QC
+QC
+QC
+DC
+DC
+Negtive Margin
+PUSH
+DC
+MLP
+conv
+(1×1)
+conv
+(1×1)
+conv
+(1×1)
+Softmax
+(a) Multi-scale Semantic Correlation Mining network (MSCMNet)
+(b) Infomation Adoptive Attention Lossless Block(ALB)
+feature of the shallow layer
+feature of the backbone
+feature addition and fusion
+(c) Loss of MSCMNet
+IR glober feature
+Fig. 2. The framework of our proposed method: (a) The overall structure of visible-infrared Multi-scale Semantic Correlation Mining network (MSCMNet),
+which is based on the Residual Neural Network. MSCMNet contains three components: Quadruple-Stream Feature Extractors (QFE), Multi-scale Information
+Correlation Mining Block (MIMB), and the total loss. (b) The conceptual illustration of the designed Information Adoptive Lossless Block (ALB), which is
+the component of MIMB. (c) The diagram of the loss function contains quadruple center loss (QC), dual center loss (DC), and negative margin loss (NM).
+difficult to control the information retained by the features.
+[41] is a matching framework for occlusion scenes. PartMix
+[42] is proposed to enhance the sample. Finally, works re-
+lated to semantic information. [43] exploited nuanced but
+discriminative information by a proposed pattern alignment
+module and a modality alleviation module. DSCNet [44]
+optimizes channel consistency from two aspects, fine-grained
+inter-channel semantics and comprehensive intermodality se-
+mantics. [45]Ensure learning eliminates semantic concepts
+related to body shape from the features.
+While the above methods have proven effective. However,
+they have not adequately taken into account the varying
+semantic information emphasized by the global image and
+the image channel. This deficiency has led to incomplete
+extraction of modality features. Consequently, we propose a
+quadruple-stream network that performs image feature extrac-
+tion at both the channel and image global levels. After that, we
+facilitate the fusion of semantic information across different
+dimensions within the features. This approach enables the ex-
+ploration of implicit correlations among cross-modal features
+and the extraction of comprehensive modal features.
+III. THE PROPOSED METHOD
+In this section, we provide a comprehensive exposition
+of the Multi-scale Semantic Correlation Mining Network
+(MSCMNet) proposed for VI-ReID, as illustrated in Fig. 2(a).
+Initially, we apply channel-level data augmentation to the
+dataset, compelling the Quadruple-Stream Feature Extractors
+to capture diverse modality-specific semantic features. This
+extractor is an innovative approach for extracting modality-
+specific features. Subsequently, the Multi-Scale Information
+Correlation Mining Block is dedicated to further exploring the
+implicit correlation of semantic information across multiple
+scales and reducing information loss during the feature ex-
+traction process. In contrast to existing multi-scale exploration
+methods, we have devised a novel multi-scale architecture.
+Finally, the Quadruple Center Triplet Loss is to handle the
+information discrepancy present in the quadruple-stream fea-
+tures. The following sections provide detailed explanations of
+our Quadruple-Stream Feature Extractor (QFE, § II-B), Multi-
+Scale Information Correlation Mining Block (MIMB, § II-C),
+and Quadruple Center Triplet Loss (QCTloss, § II-D).
+A. Problem Formulation
+The RGB global images exhibit details such as color,
+texture, and other fine-grained features. In contrast, IR images
+are single-channel and inherently lack information such as
+color and texture. However, for each channel of the RGB
+modality, the emphasis is on expressing the inherent features
+
+
+--- PAGE 4 ---
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021
+4
+RGB
+image
+RGB
+channel
+augment
+IR
+image
+IR
+channel
+augment
+Fuse
+(b) Quadruple-Stream Feature Extractor
+kernel
+(a) dataset augment
+kernel
+kernel
+kernel
+RGB      channel augment
+IR        channel augment
+Fig. 3.
+(a) illustrates the extended dataset through data augmentation. (b)
+illustrates our quadruple-stream feature extractor, consisting of four convolu-
+tional layers with non-shared parameters.
+of individuals, such as body posture and outline, rather than
+focusing on color or details. In order to achieve semantic
+alignment between IR images and RGB images, we enhance
+the IR modality by giving some channel information. This
+enables the IR images to be similar to RGB images by
+having three channels, and each channel contains distinct
+information. Regarding RGB images, we employ channel
+exchange [6] to select channel semantic information. As a
+result, we acquire datasets that emphasize distinct semantic
+information. Formally, the visible and the infrared images can
+be formulated as [X V, X T ] We expand the images in the RGB
+dataset through data augmentation to create a set of global
+level images {X Vg
+id }N
+i=1 and channel level images{X Vc
+id }N
+i=1.
+Similarly, the IR global level images {X Tg
+id }N
+i=1 and channel
+level images {X Tc
+id }N
+i=1. we set them as [X Vg
+i
+, X Vc
+i , X Tg
+i , X Tc
+i ].
+The dimensions of Xi ∈R[B,C,H,W ].
+In this context, X represents the dataset, while i denotes
+the identity of pedestrians. Then V and T respectively stand
+for the visible modality and the infrared modality. g and c
+refer to the global-level image and the channel-level image.
+N signifies the total number of identities. B represents the
+batch size, C is the number of channels in the image, and
+H and W denote the height and width of the image. The
+abundance of semantic information facilitates the network in
+more effectively uncovering the relevance of semantics.
+B. Quadruple Feature Extraction and Fusion
+1) Quadruple-Stream Feature Extractor: As shown in Fig.
+3(b), the quadruple-stream feature extractor is designed to
+separate the features emphasizing color and detail from those
+emphasizing the shape and outline of the person. In the pre-
+vious dual-stream networks that utilized RGB data augmenta-
+tion, these works just extracted shared features across different
+semantic dimensions, leading to the loss of specific semantic
+information generated by data augmentation. Therefore, we
+hypothesize that certain features in the shallow layers of the
+network may temporarily exhibit semantic inconsistencies due
+to network depth, making them unrecognizable as shared
+features. However, as the network deepens, the extracted
+features become increasingly refined. Between the useless
+semantic information from the shallow layers and the more
+comprehensive features in the deep layers, we may explore
+new potentially shared features. Compared to the existing
+dual-stream network, we propose the quadruple-stream feature
+extractor, which extracts features containing diverse semantic
+dimension information in both augmented and original images
+without sharing parameters.
+Specifically, given the input of the augmented dataset
+[X Vg
+i
+, X Vc
+i , X Tg
+i , X Tc
+i ]. For each branch of the input, we
+perform feature extraction using the Quadruple-Stream Feature
+Extractor E (·).
+[GVg
+i , GVc
+i , GTg
+i , GTc
+i ] = E([X Vg
+i
+, X Vc
+i , X Tg
+i , X Tc
+i ])
+(1)
+G(0) = [GVg
+i , GVc
+i , GTg
+i , GTc
+i ]
+(2)
+G represents the features extracted by the network, and the
+subscript (0) denotes that the features are extracted by the 0-th
+layer of the network, which refers to our quadruple-stream
+feature extractors. The output dimension of quadruple-steam
+feature extractor G ∈R2∗B×C×H×W
+2) Quadruple Feature Fusion: During the testing phase,
+we integrate features from different branches within the same
+modality. However, during the training process, we do not
+perform feature fusion. This decision is based on our intention
+to encourage the network to extract more diverse modality-
+specific features using four separate feature extractors rather
+than focusing on shared features. In this fusion module, we
+merge the features extracted by the four separate feature
+extractors into two categories: visible and infrared.
+Specifically, after obtaining the features extracted by the
+extractor [GVg
+i , GVc
+i , GTg
+i , GTc
+i ], we perform feature fusion on
+these features.
+GVm
+i
+= α · GVg
+i
+⊕(1 −α) · GVc
+i
+GTm
+i
+= α · GTg
+i
+⊕(1 −α) · GTc
+i
+(3)
+The fused features representing the fusion of the visible and
+infrared modalities are denoted as GVm
+i
+and GTm
+i
+respectively.
+Here, m signifies that the features have been formed through
+fusion and V and T indicate the respective modalities. There-
+fore, during training, the output of the feature extractor is
+[GVg
+i , GVc
+i , GTg
+i , GTc
+i ], while in testing mode, the output of this
+module is [GVm
+i
+, GTm
+i
+]. We define the parameters α = 0.5.
+C. Multi-scale Information Correlation Mining Block
+The key to improving our model performance lies in ef-
+fectively utilizing the features extracted by the four-stream
+feature extractors. Following the feature extraction through
+the shared parameter layers, we obtain shared features across
+different semantic dimensions. With the continuous increase
+in network depth, the extracted features become increasingly
+refined. Therefore, our objective is to integrate these refined
+features and features containing rich semantic information
+from shallow layers. The purpose of this fusion is to enrich
+the feature information present in the deep layers of the
+network. However, it is crucial to acknowledge that this fusion
+
+
+--- PAGE 5 ---
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021
+5
+incorporates both semantic relevant and irrelevant information.
+To address this, we design ALB to guide the network mining
+of truly effective features. Finally, the aim of this module is
+to possess the following functionalities:
+1) Filtering out genuinely valuable information and further
+extracting comprehensive features.
+2) Reusing the lost semantic information in the shallow
+layers of the network and exploring the implicit semantic
+correlations between the shallow-layer features and the
+deep-layer features.
+To accomplish this, we set the features extracted from each
+layer of the backbone as Gi, The term i denotes the feature
+output of the i-th layer. To distinguish the output of the
+layer from the MIMB module, we designate the feature output
+obtained from the 3-th layer as our input to the MIMB module,
+denoted as F0.
+We combine four ALB layers to form the MIMB module
+by designing a novel multi-scale structure. As shown in Fig.
+2(b), each ALB has inputs Fi and Gi . Here, F is the input of
+ALB in the backbone, which represents deep-layer features.
+While G is the preserved output in the shallow network,
+representing the lost information. We should aim to explore
+the relationships between shallow-level semantics and deep-
+level semantic information across multiple scales. As such,
+we design a novel multi-scale structure [46], [47] to address
+this issue. To enable the utilization of this lost information,
+we apply a Convolutional Layer and regularization to F and
+G, mapping them to the same feature space. We also fuse the
+dimensionally reduced features. Thus, we define the ψ:
+ψQ
+i = FconvN( Gi )
+(4)
+ψK
+i
+= FconvN( Gi )
+(5)
+ψV
+i = α · FconvN(Gi) ⊕(1 −α) · FconvN(Fi)
+(6)
+Where FconvN is to perform dimensionality reduction and
+we set α = 0.1. In order to focus on the effective parts of this
+information, we adopt a multi-head attention mechanism [48]
+module as a basic block. This ALB module enables to further
+explore the valuable part of the shallow layer information and
+mine the semantic correlation of these features at Multi-scale.
+Specifically, we denote ψQ
+i , ψK
+i , ψV
+i
+as the query, key, and
+value inputs to the attention mechanism, respectively.
+Fi+1 = Fconv
+
+A
+
+ψQ
+i , ψK
+i , ψV
+i
+
++ Fi
+
+(7)
+Where the attention mechanism, denoted as A, consists of
+multi-head attention and a single-layer MLP. Subsequently, we
+apply a convolutional layer, denoted as Fconv, to increase the
+dimensionality of the features after the attention mechanism,
+enabling subsequent ALB modules to utilize these features.
+Additionally, we incorporate residual connections into the
+ALB to further enhance its effectiveness.
+D. Overall loss function
+In our Quadruple Center Triplet Loss, we aim to fully
+exploit the rich semantic information contained within the
+features. consider intra-modality features, the primary focus
+a) Origin Single Center
+c) Quar Center
+b) Dual Center
+Fig. 4. The QC Loss consists of the dual center loss (b) and quar center loss
+(c). The dual center is employed to alleviate the significant differences between
+modalities, while the quar center enables the comprehensive utilization of
+information contained within the four-stream network.
+is on accurately capturing the discriminative information of
+persons. As for cross-modality features, we strive to explore
+the semantic correlations and ensure that modality-specific
+information can also be utilized effectively. To achieve this
+objective, we propose dual-center loss and quar-center loss to
+execute intra-modal and inter-modal constraints. Additionally,
+we introduce a negative boundary loss to constrain the dis-
+tances between feature centers of different identities.
+As shown in Fig. 4, in contrast to origin center loss [23],
+[24] and its existing variations that aggregate intra-modality
+features towards their respective centers, we directly guide the
+features of one modality toward the center of another modality
+to establish a cross-modal cross-aggregation scenario. This
+idea allows the features to fit directly to the center of the
+other modality, rather than focusing on the proximity between
+the centers, resulting in stronger constraint effects. It also pre-
+serves as much diverse dimensional information and modality-
+specific details as possible within the features.
+1) Quadruple multi-dimensional Enhancement Loss: From
+the network model, we obtain four sets of features, denoted
+as fi. We partition these features into four separate sets, each
+representing a different dimensional feature.
+h
+f Vg
+i , f Vc
+i , f Tg
+i , f Tc
+i
+i
+= fi
+(8)
+Through computations, we derive the centers for the four-
+steam feature.
+[cVg, cVc, cTg, cTc]i = 1
+K (
+K
+X
+p=1
+[f Vg
+p , f Vc
+p , f Tg
+p , f Tc
+p ]i)
+(9)
+We denote c represents the center of the samples under
+different streams of the network. p denotes all the samples
+under a particular identity. V and T refers to the visible light
+modality and the infrared modality. The superscript g and c
+represent the global feature and channel feature, respectively.
+We believe that global information contains more stable and
+reliable feature representations. Therefore, we use the center of
+the modality global feature as the reference point. As shown in
+Fig. 4(b). We encourage the modality features to approach the
+center of another modality. We do not utilize center constraints
+within the same modality. This is because the intra-modality
+constraints tend to prioritize the extraction of shared features
+among distinct semantic information. This leads to the loss of
+diverse semantic information within the same modality.
+
+
+--- PAGE 6 ---
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021
+6
+Algorithm 1 The training procedure of MSCMNet
+Input: Training set: Xtrain
+Output: Network parameters Θ1, Θ2, Θ3
+1: Obtain [X Vg, X Vc, X Tg, X Tc] from datasets Xtrain.
+2: Pretrain ResNet50 on ImageNet using parameters Θ1,
+initialize the QFE parameters Θ2, MIMB parameters Θ2.
+3: while not convergence do
+4:
+Obtain Gi by QFE and the i-th layer of Baseline.
+// (1)–(3)
+5:
+Obtain Fi by MIMB. // (4)–(7)
+6:
+Obtain [f Vg, f Vc, f Tg, f Tc] by joint exploration of
+Fi and Gi.
+7:
+Aggregate f Vg, f Vc, f Tg and , f Tc. // (8)–(14)
+8:
+Calculate LID and LQCT by (15),(16).
+9:
+Optimize parameters Θ1, Θ2, Θ3 according to (17).
+10: end while
+Dquar
+i
+=∥f Vg
+i
+−cTg
+i
+∥2 + ∥f Vc
+i
+−cTg
+i
+∥2
++∥f Tg
+i
+−cVg
+i
+∥2 + ∥f Tc
+i
+−cVg
+i
+∥2
+(10)
+In which D represents the Euclidean distance measure
+obtained by summing the squared distances between the four
+centers. Here, ∥· ∥denotes the L2 norm (Euclidean Distance).
+2) Modality-information Enhancement Loss: Similarly, we
+decompose the four sets of features, denoted as fi, into the
+overall features of the two modalities.
+
+f V
+i , f T
+i
+
+= fi
+(11)
+By performing computations, we determine the centers of
+the modalities, which are composed of features from the global
+g and channel c dimensions.
+[cV, cT ]i =
+1
+2K (
+K
+X
+p=1
+[f Vg
+p
++ f Vc
+p , f Tg
+p
++ f Tc
+p ]i)
+(12)
+As shown in Fig. 4(c), we constrain the modality features
+with the center of another modality using the L2 norm.
+Ddual
+i
+= ∥f V
+i −cT
+i ∥2 + ∥f T
+i −cV
+i ∥2
+(13)
+3) Negative Bounder margin loss: In the previous context,
+we obtain the sample centers and aggregate the features of
+the same ID together. However, constraining features within
+the same identity alone are not sufficient. We also need to
+enforce distance constraints between different identities to
+ensure distinguishability among samples from different IDs.
+Given that the center loss mentioned above already provides
+effective constraints for positive samples within the same
+identity, we only need to apply the Negative Bounder loss to
+constrain negative samples between different identities. Thus,
+As shown in Fig. 1(c). we set a lower bound ρ for the distances
+between different IDs.
+LNM =
+N
+X
+i,j=1
+∀i̸=j
+[ ρ −∥fi −cyj ∥2 ]+
+(14)
+In fact, we impose the constraints on each feature fi within
+each identity (ID), ensuring that its distance to the feature
+center cyi of other identities remains above a threshold of ρ.
+4) Objective Function: In the previous context, the de-
+signed loss functions enable the RGB and IR modality features
+to incorporate more modality-specific information and explore
+the underlying correlations between features. The quadruple-
+center is employed to constrain modality-specific information,
+while the dual-center provides overall constraints between
+modalities. However, if the features contain excessive uncor-
+related modality-specific information, it can hinder the fitting
+of our model. Conversely, if there is an insufficient amount of
+effective modality-specific features, our network may degrade
+into a dual-stream network. Therefore, we carefully balance
+the degrees of quadruple-center constraints and dual-center
+constraints to get a more comprehensive modal center.
+LQC = α
+N
+X
+i=1
+Dquar
+i
++ (1 −α)
+N
+X
+i=1
+Ddual
+i
+(15)
+The parameter α is set to 0.05 in order to balance the terms
+dual-center and quadruple-center. Finally, we also incorporate
+the ID loss. The overall loss function is defined as follows:
+LQCT = LQC + LNM
+(16)
+Ltotal = LID + LQCT
+(17)
+The training process of our approach is illustrated in Algo-
+rithm 1.
+IV. EXPERIMENTAL RESULT
+A. Datasets and Evaluation Metrics
+The SYSU-MM01 dataset [5] provides 86,628 visible im-
+ages and 15,792 infrared images captured by four visible
+cameras and two infrared cameras. It consists of 491 individ-
+ual identities and includes both all-search and indoor-search
+modes. We use 3,803 infrared images as the query set and
+randomly select 301 images from other visible images as the
+gallery set.
+The RegDB dataset [49] contains 4,120 paired visible and
+infrared images captured by overlapping cameras. It consists
+of 412 identities, with each identity having 10 visible images
+and 10 infrared images. For training, we randomly select all
+images from 206 identities, while the remaining 206 identities
+are used for testing.
+The LLCM [40] dataset utilizes a 9-camera network de-
+ployed in low-light environments, which can capture the VIS
+images in the daytime and capture the IR images at night. This
+dataset contains 46,767 bounding boxes of 1,064 identities,
+encompassing various climate conditions and clothing styles.
+We utilize Cumulative Matching Characteristics (CMC),
+mean Average Precision (mAP), and mean Inverse Negative
+Penalty (mINP) [50] as our primary evaluation metrics.
+
+
+--- PAGE 7 ---
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021
+7
+TABLE I
+COMPARISON WITH THE STATE-OF-THE-ARTS ON SYSU-MM01 DATASET. RANK-K ACCURACY (%) AND MAP (%) ARE REPORTED.
+Method
+Publish
+All Search
+Indoor search
+Rank-1
+Rank-10
+Rank-20
+mAP
+Rank-1
+Rank-10
+Rank-20
+mAP
+Zero-Pad [5]
+ICCV 17
+14.80
+54.12
+71.33
+15.95
+20.58
+68.38
+85.79
+26.92
+HCML [51]
+AAAI 18
+14.32
+53.16
+69.17
+16.16
+24.52
+73.25
+86.73
+30.08
+AliGAN [30]
+ICCV 19
+42.40
+85.00
+93.70
+40.70
+45.90
+87.60
+94.40
+54.30
+DDAG [52]
+ECCV 20
+54.75
+90.39
+95.81
+53.02
+61.02
+94.06
+98.41
+67.98
+AGW [50]
+TPAMI 21
+47.50
+84.39
+92.14
+47.65
+54.17
+91.14
+95.98
+62.97
+LbA [27]
+ICCV 21
+55.41
+-
+-
+54.14
+58.46
+-
+-
+66.33
+CAJ [6]
+CVPR 21
+69.88
+95.71
+98.46
+66.89
+76.26
+97.88
+99.49
+80.37
+DML [53]
+TCSVT 22
+58.40
+91.20
+95.80
+56.10
+62.40
+95.20
+98.70
+69.50
+SPOT [54]
+TIP 22
+65.34
+92.73
+97.04
+62.25
+69.42
+96.22
+99.12
+74.63
+FMCNet [55]
+CVPR 22
+66.34
+-
+-
+62.51
+68.15
+-
+-
+74.09
+DCLNet [26]
+ACM MM 22
+70.80
+-
+-
+65.30
+73.50
+-
+-
+76.80
+MAUM [56]
+CVPR 22
+71.70
+-
+-
+68.80
+77.0
+-
+-
+81.9
+DSCNet [44]
+TIFS 22
+73.89
+96.27
+98.84
+69.47
+79.35
+98.32
+99.77
+82.65
+MSCLNet [57]
+ECCV 22
+76.99
+97.93
+99.18
+71.64
+78.49
+99.32
+99.91
+81.17
+GUR [58]
+ICCV 23
+63.51
+-
+-
+61.63
+71.11
+-
+-
+76.23
+PMT [36]
+AAAI 23
+67.53
+95.36
+98.64
+51.86
+71.66
+96.73
+99.25
+76.52
+DEEN [40]
+CVPR 23
+74.70
+97.60
+99.20
+71.80
+80.30
+99.00
+99.80
+83.30
+MUN [59]
+ICCV 23
+76.24
+97.84
+-
+73.81
+79.42
+-
+98.09
+82.06
+SGIEL [45]
+CVPR 23
+77.12
+97.03
+99.08
+72.33
+82.07
+97.42
+98.87
+82.95
+PartMix [42]
+CVPR 23
+77.78
+-
+-
+74.62
+81.52
+-
+-
+84.83
+MSCMNet
+Ours
+78.53
+97.51
+99.23
+74.20
+83.00
+98.99
+99.80
+85.54
+TABLE II
+COMPARISON WITH THE STATE-OF-THE-ARTS ON REGDB
+DATASET. RANK-R ACCURACY (%) AND MAP(%)
+Method
+Publish
+V – I
+I – V
+Rank-1
+mAP
+Rank-1
+mAP
+Zero-Pad [5]
+ICCV 17
+17.8
+18.9
+16.7
+17.9
+HCML [51]
+AAAI 18
+24.4
+20.0
+21.7
+22.2
+AliGAN [30]
+ICCV 19
+57.9
+53.6
+56.3
+53.4
+DDAG [52]
+ECCV 20
+69.3
+63.4
+68.0
+61.8
+AGW [50]
+TPAMI 21
+70.0
+66.3
+70.4
+65.9
+LbA [27]
+ICCV 21
+74.1
+67.6
+72.4
+65.4
+CAJ [6]
+CVPR 21
+85.0
+79.1
+84.7
+77.8
+DML [53]
+TCSVT 22
+77.6
+84.3
+77.0
+83.6
+SPOT [54]
+TIP 22
+80.3
+72.4
+79.3
+72.2
+FMCNet [55]
+CVPR 22
+89.1
+84.4
+88.3
+83.8
+DCLNet [26]
+ACM MM 22
+81.2
+74.3
+78.0
+70.6
+MAUM [56]
+CVPR 22
+87.9
+85.1
+87.0
+84.3
+DSCNet [44]
+TIFS 22
+85.4
+77.3
+83.5
+75.2
+MSCLNet [57]
+ECCV 22
+84.1
+80.1
+83.8
+78.3
+GUR [58]
+ICCV 23
+75.0
+69.9
+73.9
+70.2
+PMT [36]
+AAAI 23
+84.8
+76.5
+84.1
+75.1
+PartMix [42]
+CVPR 23
+85.6
+82.2
+84.9
+82.5
+MSCMNet
+Ours
+90.4
+81.2
+87.7
+78.2
+B. Implementation Details
+Our model is implemented using the PyTorch library and
+trained on an NVIDIA 3090 GPU. Firstly, we use AGW [50]
+as our baseline. Additionally, each image is resized into 384
+× 192 with zero-padding, random horizontal flipping, and ran-
+dom erasing [60] for data augmentation. We utilize the channel
+exchange technique from CAJ [6] to eliminate the channel
+information of RGB and employ our proposed IR channel
+expansion technique to incorporate channel information into
+IR images. During the training phase, we randomly selected 4
+VIS images and 4 IR images from 6 identities. We utilize the
+TABLE III
+COMPARISON WITH THE STATE-OF-THE-ARTS ON LLCM
+DATASET. RANK-R ACCURACY (%) AND MAP(%)
+Method
+Publish
+V – I
+I – V
+Rank-1
+mAP
+Rank-1
+mAP
+DDAG [52]
+ECCV 20
+48.0
+52.3
+40.3
+48.4
+LbA [27]
+ICCV 21
+50.8
+55.6
+43.8
+53.1
+AGW [50]
+TPAMI 21
+51.5
+55.3
+43.6
+51.8
+CAJ [6]
+CVPR 21
+56.5
+59.8
+48.8
+48.8
+MMN [61]
+ACM MM 21
+59.9
+62.7
+52.5
+58.9
+DART [62]
+CVPR 22
+60.4
+63.2
+52.2
+59.8
+DEEN [40]
+CVPR 23
+62.5
+65.8
+54.9
+62.9
+MSCMNet
+Ours
+63.9
+66.1
+55.1
+60.8
+SGD optimizer with a momentum of 0.9 and a weight decay
+of 5×10−4. The learning rate is decreased by a factor of 10 at
+epochs 30, 90, and 120 during the training process. We train
+the model for 150 epochs.
+C. Comparison with the State-of-the-Art Methods
+From the experiments on the SYSU-MM01 dataset shown
+in Tab. I, it can be observed that the proposed MSCMNet
+outperforms other state-of-the-art methods, achieves 78.53%
+Rank-1 and 74.20% mAP in the All-search mode, and 83.00%
+Rank-1 and 85.54% mAP in the Indoor-search mode. MSCM-
+Net extracts more discriminative features by exploring the
+semantic correlations between features at different scales. In
+most VI Re-ID works, such as DSCNet [44] and SGIEL [45],
+the focus is on utilizing shape-erased or channel information to
+mine consistency between semantics. In contrast, MSCMNet
+better exploits the correlations of intra-modal and inter-modal
+semantic information achieved at multiple scales. Compared
+to methods based on data augmentation or auxiliary mode to
+reduce modality discrepancies, such as CAJ [6] and AliGAN
+
+
+--- PAGE 8 ---
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021
+8
+TABLE IV
+ABLATION STUDY OF QFE, MIMB, QCT ON THE ALL-SEARCH
+MODE OF SYSU-MM01 DATASET. RANK-R ACCURACY(%) AND
+MAP(%) ARE REPORTED.
+Method
+SYSU-MM01
+BASE
+QFE
+MIMB
+Ltri
+Lqct
+r-1
+r-10
+r-20
+mAP
+!
+!
+69.9
+95.7
+98.5
+66.9
+!
+!
+!
+73.0
+96.3
+98.8
+69.3
+!
+!
+!
+74.3
+95.7
+98.4
+69.8
+!
+!
+!
+!
+75.1
+97.2
+98.9
+70.3
+!
+!
+!
+76.5
+97.2
+99.0
+71.8
+!
+!
+!
+77.1
+97.4
+99.1
+71.8
+!
+!
+!
+!
+78.5
+97.5
+99.2
+74.2
+71.37
+71.26
+71.07
+71.31
+71.08
+72.45
+72.18
+73.33
+74.20
+72.50
+70
+70.5
+71
+71.5
+72
+72.5
+73
+73.5
+74
+74.5
+75
+1
+2
+3
+4
+5
+mAP(%)
+Number of ALB Modules
+Normal ConnecƟon
+MulƟ-Scale ConnecƟons
+76.37
+76.46
+76.32
+76.13
+76.2
+77.25
+77.10
+77.37
+78.53
+76.79
+75.5
+76
+76.5
+77
+77.5
+78
+78.5
+79
+1
+2
+3
+4
+5
+Rank-1(%)
+Number of ALB Modules
+Normal ConnecƟon
+MulƟ-Scale ConnecƟons
+Fig. 5. Ablation study for MIMB with different numbers of the ALB and the
+effectiveness of multi-scale structures.
+[30], MSCMNet takes into account the semantic inconsistency
+caused by different data augmentation. Therefore, MSCMNet
+is more effective. From Tab. II, it is evident that MSCMNet
+also outperforms recent works on the RegDB dataset, with
+90.4% Rank-1 and 81.2% mAP from visible to infrared mode
+as well as 87.7% Rank-1 and 78.2% mAP from infrared to
+visible mode. This reveals that achieving semantic consistency
+at the same scale is more challenging, and utilizing multi-scale
+semantic correlations for extracting discriminative features is
+a more effective approach. Finally, Tab. III demonstrates that
+MSCMNet also performs exceptionally well on the LLCM
+dataset.
+D. Ablation Study and Analysis
+In this section, we conducted an ablation study to evaluate
+the contribution of each component in our proposed MSCM-
+Net. All experiments were performed on SYSU-MM01 under
+the all-search mode using the same baseline. We tuned the
+hyperparameters of each experiment carefully. The results are
+described as follows:
+1) Effectiveness of Each Component: Here, we analyze
+the key components of MSCMNet, including the quadruple-
+steam feature extractor (QFE), Multi-scale Information Cor-
+relation Mining Block (MIMB), and quadruple center triple
+loss (QCT). For a fair comparison, we utilize CAJ as our
+baseline (Base) for all experiments. As summarized in Tab.
+IV, each component helps to boost performance. Starting
+from the baseline, adding QFE improves the performance,
+which indicates that QFE effectively extracts features with
+different semantic information. This improvement can be
+attributed to the introduction of diverse information through
+data augmentation. When the MIMB is added, We observed
+78.53
+77.32
+76.94
+76.31
+50
+55
+60
+65
+70
+75
+80
+CEX
+GRAY
+CJ
+ORI
+Accuracy(%)
+Rank-1
+mAP
+mINP
+Fig. 6.
+Performance analysis of the extra branch for visible modality with
+different data augmentation.
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+0
+0.05
+0.1
+0.2
+0.3
+0.5
+1.0
+Accuracy(%)
+Rank-1
+mAP
+78.53
+77.34
+75.02
+75.18
+70.51
+50
+55
+60
+65
+70
+75
+80
+QCT(ours)
+CenterTriple
+Loss
+WRT Loss
+Triplet Loss
+Center Loss
+Accuracy(%)
+Rank-1
+mAP
+mINP
+Fig. 7. Performance analysis of different loss functions on the left and effects
+of trade-off parameters α on Quadruple Center Triple Loss on the right.
+considerable improvements in performance, confirming that
+MIMB effectively mines the semantic correlations between
+cross-modal features. It addresses the challenge of inconsistent
+semantic information at the same scale. Thereby enabling
+the extraction of comprehensive from diverse semantic di-
+mensions. Finally, experiments indicate that QCT extracts
+more discriminative features of the person and enables the
+extracted features to incorporate the most stable information
+from different data augmentation. The combination of these
+components has resulted in performance gains for MSCMNet.
+2) Effectiveness of multi-scale structure MIMB and the
+number of ALB layers: Firstly, the proposed MIMB is com-
+posed of ALB. As shown in Fig. 5, the results show that
+the best performance is obtained using 4-layer ALB. This is
+because 4-layer ALB can encompass all scale information of
+the Network shallow layer. On the one hand, using 5-layer
+ALB would result in information redundancy of shallow layer
+features, which is not conducive to network training. On the
+other hand, employing 3 or fewer layers ALB leads to the loss
+of semantic information on a specific scale, causing the MIMB
+to lose the ability to explore the semantic correlations in that
+part of the feature. Furthermore, to validate the effectiveness
+of the multi-scale structure, we conducted experiments on
+MIMB with the multi-scale structure removed. The results
+demonstrate that regardless of the number of layers in ALB,
+the performance is superior when the multi-scale structure is
+integrated. Compared to existing pyramid-based multi-scale
+approaches [33]–[35], our work designs an innovative multi-
+scale structure that enables a more comprehensive feature
+exploration while considering a richer set of modality infor-
+mation. As a result, we achieve higher accuracy. Moreover,
+simply stacking ALB modules without the multi-scale struc-
+ture leads to poor performance and results in the network
+failing to fit adequately. This observation further confirms the
+effectiveness of our MIMB.
+3) The impact of different data augmentation on the ad-
+ditional RGB branch: As shown in Fig. 6, we conducted
+
+
+--- PAGE 9 ---
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021
+9
+Query
+Rank-1→Rank-10
+(a)
+(b)
+(c) MSCMNet
+Query
+Rank-1→Rank-10
+(a)
+(b)
+(c) Baseline
+Fig. 8. Illustration of person retrieval results and Heat maps. (a) Query images. (b) Heat map. (c) Top 10 retrieval results. The left side is the retrieval result
+of our MSCMNet, and the right side is the baseline retrieval result.
+a）Baseline
+b）MSCMNet
+Fig. 9. T-SNE visualization result of baseline with MSCMNet.
+Fig. 10. The feature distances of intra-and-inter classes visualization.
+tests on data augmentation for the extra visible branch, and it
+was observed that the channel exchange (CEX) [6] technique
+achieved the best results. This is because channel exchange
+directly selects channel information as the network input
+without any processing and keeps the original channel infor-
+mation of the image. Although global information contains
+channel information, it actually emphasizes different semantic
+dimensions. This is also because our model aims to explore
+the implicit semantic correlations across diverse information
+that is present in the data. Based on experimental results,
+we ultimately selected channel exchange as the method to
+eliminate channel information from RGB images.
+4) Compare the effects of different loss functions: The ob-
+jective of designing the Quadruple Center Triple Loss (QCT)
+is to enable the network to effectively leverage information
+from different dimensions, which enables improved constraint
+effects. To demonstrate the effectiveness of the loss, we
+conducted performance testing by comparing it with popular
+loss functions. As shown in Fig. 7 left, we test the Center
+Loss, Triple Loss, WRT, and Center Triple Loss on the
+MSCMNet, and the results demonstrate that our QCT achieves
+greater improvements. This can be attributed to the fact that
+the features extracted from different data emphasize different
+dimensions of semantics. By utilizing QCT, we can effectively
+explore these features to take advantage of our network. Fig.
+7 right demonstrates the impact of parameter α in QCT and
+we set the value of parameter α to 0.05.
+E. Visualization Analysis
+To analyze the visual effectiveness of our proposed model,
+we present several representative visual examples. As shown in
+Fig. 8(b), we employ Grad-CAM to generate attention maps
+for the query images. Compared to the heatmaps extracted
+by the baseline model displayed on the left, the heatmaps
+generated by MSCMNet on the right exhibit a stronger focus
+on identity-related features and contain more focus points
+within the regions of individuals. This observation suggests
+that our design of MSCMNet captures a broader range of
+person-specific characteristics. Additionally, Fig. 8(c) provides
+the top-10 retrieval results. It proves that MSCMNet learns
+more comprehensive identity discrimination between different
+classes compared with the baseline. As shown in Fig. 9,
+the learned identity discrimination of the baseline model is
+visualized using t-SNE, revealing that feature embeddings of
+the same identity are dispersed and difficult to distinguish.
+For MSCMNet, since we design QCT to achieve a stronger
+constraint effect, each identity can be cast to a more compact
+and distinguishable distribution. Finally, We visualize the
+intra-and-inter identity feature distance in Fig. 10. In the all-
+search modes, mean values for the feature distances of intra-
+class decline prove that MSCMNet successfully reduces the
+modality divergence compared with the baseline.
+V. CONCLUSION
+In this paper, we propose a novel VI-ReID framework called
+MSCMNet. It focuses on exploring the correlations between
+
+
+--- PAGE 10 ---
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021
+10
+different modality semantic features at multiple scales, en-
+suring that the extracted features encompass comprehensive
+modality and identity discriminative information. We improve
+the issue of existing networks that lose valuable information
+during the feature extraction process. Our proposed QFE and
+MIMB techniques effectively extract and utilize features from
+multiple semantic dimensions, leading to improved accuracy
+and robustness of the model. It is worth noting that our MIMB
+structure can be further combined with other existing VI-
+ReID models for further investigation. Extensive experimental
+results validate the outstanding performance of MSCMNet
+and the effectiveness of its components. In the future, we
+are driven to better explore the implicit correlations among
+semantic information of multiple scales in other cross-modal
+tasks.
+REFERENCES
+[1] Jingya Wang, Xiatian Zhu, Shaogang Gong, and Wei Li.
+Transfer-
+able joint attribute-identity deep learning for unsupervised person re-
+identification. In Proceedings of the IEEE conference on computer vision
+and pattern recognition, pages 2275–2284, 2018.
+[2] Yifan Sun, Qin Xu, Yali Li, Chi Zhang, Yikang Li, Shengjin Wang,
+and Jian Sun. Perceive where to focus: Learning visibility-aware part-
+level features for partial person re-identification. In Proceedings of the
+IEEE/CVF conference on computer vision and pattern recognition, pages
+393–402, 2019.
+[3] Yicheng Wang, Zhenzhong Chen, Feng Wu, and Gang Wang. Person
+re-identification with cascaded pairwise convolutions. In Proceedings
+of the IEEE Conference on Computer Vision and Pattern Recognition,
+pages 1470–1478, 2018.
+[4] Feng Zheng, Cheng Deng, Xing Sun, Xinyang Jiang, Xiaowei Guo,
+Zongqiao Yu, Feiyue Huang, and Rongrong Ji. Pyramidal person re-
+identification via multi-loss dynamic training.
+In Proceedings of the
+IEEE/CVF conference on computer vision and pattern recognition, pages
+8514–8522, 2019.
+[5] Ancong Wu, Wei-Shi Zheng, Hong-Xing Yu, Shaogang Gong, and
+Jianhuang Lai. Rgb-infrared cross-modality person re-identification. In
+Proceedings of the IEEE international conference on computer vision,
+pages 5380–5389, 2017.
+[6] Mang Ye, Weijian Ruan, Bo Du, and Mike Zheng Shou.
+Channel
+augmented joint learning for visible-infrared recognition. In Proceedings
+of the IEEE/CVF International Conference on Computer Vision, pages
+13567–13576, 2021.
+[7] Sanping Zhou, Fei Wang, Zeyi Huang, and Jinjun Wang. Discriminative
+feature learning with consistent attention regularization for person re-
+identification. In Proceedings of the IEEE/CVF international conference
+on computer vision, pages 8040–8049, 2019.
+[8] Tianlong Chen, Shaojin Ding, Jingyi Xie, Ye Yuan, Wuyang Chen, Yang
+Yang, Zhou Ren, and Zhangyang Wang. Abd-net: Attentive but diverse
+person re-identification. In Proceedings of the IEEE/CVF international
+conference on computer vision, pages 8351–8361, 2019.
+[9] Bryan Ning Xia, Yuan Gong, Yizhe Zhang, and Christian Poellabauer.
+Second-order non-local attention networks for person re-identification.
+In Proceedings of the IEEE/CVF international conference on computer
+vision, pages 3760–3769, 2019.
+[10] Guangrun Wang, Liang Lin, Shengyong Ding, Ya Li, and Qing Wang.
+Dari: Distance metric and representation integration for person verifica-
+tion. In Proceedings of the AAAI Conference on Artificial Intelligence,
+volume 30, 2016.
+[11] Weihua Chen, Xiaotang Chen, Jianguo Zhang, and Kaiqi Huang. Beyond
+triplet loss: a deep quadruplet network for person re-identification. In
+Proceedings of the IEEE conference on computer vision and pattern
+recognition, pages 403–412, 2017.
+[12] Dapeng Chen, Dan Xu, Hongsheng Li, Nicu Sebe, and Xiaogang
+Wang.
+Group consistent similarity learning via deep crf for person
+re-identification. In Proceedings of the IEEE conference on computer
+vision and pattern recognition, pages 8649–8658, 2018.
+[13] Rahul Rama Varior, Bing Shuai, Jiwen Lu, Dong Xu, and Gang
+Wang. A siamese long short-term memory architecture for human re-
+identification. In Computer Vision–ECCV 2016: 14th European Confer-
+ence, Amsterdam, The Netherlands, October 11–14, 2016, Proceedings,
+Part VII 14, pages 135–153. Springer, 2016.
+[14] Yang Fu, Yunchao Wei, Yuqian Zhou, Honghui Shi, Gao Huang,
+Xinchao Wang, Zhiqiang Yao, and Thomas Huang. Horizontal pyramid
+matching for person re-identification.
+In Proceedings of the AAAI
+conference on artificial intelligence, volume 33, pages 8295–8302, 2019.
+[15] Guanshuo Wang, Yufeng Yuan, Xiong Chen, Jiwei Li, and Xi Zhou.
+Learning discriminative features with multiple granularities for person
+re-identification. In Proceedings of the 26th ACM international confer-
+ence on Multimedia, pages 274–282, 2018.
+[16] Wei Li, Xiatian Zhu, and Shaogang Gong. Harmonious attention network
+for person re-identification. In Proceedings of the IEEE conference on
+computer vision and pattern recognition, pages 2285–2294, 2018.
+[17] Hao Liu, Jiashi Feng, Meibin Qi, Jianguo Jiang, and Shuicheng Yan.
+End-to-end comparative attention networks for person re-identification.
+IEEE transactions on image processing, 26(7):3492–3506, 2017.
+[18] Xihui Liu, Haiyu Zhao, Maoqing Tian, Lu Sheng, Jing Shao, Shuai
+Yi, Junjie Yan, and Xiaogang Wang.
+Hydraplus-net: Attentive deep
+features for pedestrian analysis. In Proceedings of the IEEE international
+conference on computer vision, pages 350–359, 2017.
+[19] Liming Zhao, Xi Li, Yueting Zhuang, and Jingdong Wang.
+Deeply-
+learned part-aligned representations for person re-identification.
+In
+Proceedings of the IEEE international conference on computer vision,
+pages 3219–3228, 2017.
+[20] Meng Zheng, Srikrishna Karanam, Ziyan Wu, and Richard J Radke. Re-
+identification with consistent attentive siamese networks. In Proceedings
+of the IEEE/CVF conference on computer vision and pattern recognition,
+pages 5735–5744, 2019.
+[21] Yifan Sun, Liang Zheng, Yi Yang, Qi Tian, and Shengjin Wang. Beyond
+part models: Person retrieval with refined part pooling (and a strong
+convolutional baseline). In Proceedings of the European conference on
+computer vision (ECCV), pages 480–496, 2018.
+[22] Mang Ye, Xiangyuan Lan, Zheng Wang, and Pong C Yuen.
+Bi-
+directional center-constrained top-ranking for visible thermal person re-
+identification. IEEE Transactions on Information Forensics and Security,
+15:407–419, 2019.
+[23] Haijun Liu, Xiaoheng Tan, and Xichuan Zhou.
+Parameter sharing
+exploration and hetero-center triplet loss for visible-thermal person re-
+identification. IEEE Transactions on Multimedia, 23:4414–4425, 2020.
+[24] Yuanxin Zhu, Zhao Yang, Li Wang, Sai Zhao, Xiao Hu, and Dapeng
+Tao.
+Hetero-center loss for cross-modality person re-identification.
+Neurocomputing, 386:97–109, 2020.
+[25] Liyan Zhang, Guodong Du, Fan Liu, Huawei Tu, and Xiangbo Shu.
+Global-local multiple granularity learning for cross-modality visible-
+infrared person reidentification. IEEE Transactions on Neural Networks
+and Learning Systems, 2021.
+[26] Hanzhe Sun, Jun Liu, Zhizhong Zhang, Chengjie Wang, Yanyun Qu,
+Yuan Xie, and Lizhuang Ma.
+Not all pixels are matched: Dense
+contrastive learning for cross-modality person re-identification.
+In
+Proceedings of the 30th ACM International Conference on Multimedia,
+pages 5333–5341, 2022.
+[27] Hyunjong Park, Sanghoon Lee, Junghyup Lee, and Bumsub Ham. Learn-
+ing by aligning: Visible-infrared person re-identification using cross-
+modal correspondences. In Proceedings of the IEEE/CVF international
+conference on computer vision, pages 12046–12055, 2021.
+[28] Pingyang Dai, Rongrong Ji, Haibin Wang, Qiong Wu, and Yuyu Huang.
+Cross-modality person re-identification with generative adversarial train-
+ing. In IJCAI, volume 1, page 6, 2018.
+[29] Guan-An Wang, Tianzhu Zhang, Yang Yang, Jian Cheng, Jianlong
+Chang, Xu Liang, and Zeng-Guang Hou. Cross-modality paired-images
+generation for rgb-infrared person re-identification. In Proceedings of
+the AAAI conference on artificial intelligence, volume 34, pages 12144–
+12151, 2020.
+[30] Guan’an Wang, Tianzhu Zhang, Jian Cheng, Si Liu, Yang Yang, and
+Zengguang Hou. Rgb-infrared cross-modality person re-identification
+via joint pixel and feature alignment. In Proceedings of the IEEE/CVF
+International Conference on Computer Vision, pages 3623–3632, 2019.
+[31] Diangang Li, Xing Wei, Xiaopeng Hong, and Yihong Gong. Infrared-
+visible cross-modal person re-identification with an x modality.
+In
+Proceedings of the AAAI conference on artificial intelligence, volume 34,
+pages 4610–4617, 2020.
+[32] Zhiwei Zhao, Bin Liu, Qi Chu, Yan Lu, and Nenghai Yu. Joint color-
+irrelevant consistency learning and identity-aware modality adaptation
+for visible-infrared cross modality person re-identification. In Proceed-
+ings of the AAAI Conference on Artificial Intelligence, volume 35, pages
+3520–3528, 2021.
+
+
+--- PAGE 11 ---
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021
+11
+[33] Can Zhang, Hong Liu, Wei Guo, and Mang Ye.
+Multi-scale cas-
+cading network with compact feature learning for rgb-infrared person
+re-identification.
+In 2020 25th International Conference on Pattern
+Recognition (ICPR), pages 8679–8686. IEEE, 2021.
+[34] Yu-Jie Liu, Wen-Bin Shao, and Xiao-Rui Sun. Learn robust pedestrian
+representation within minimal modality discrepancy for visible-infrared
+person re-identification. Journal of Computer Science and Technology,
+37(3):641–651, 2022.
+[35] Xiongjun Wen, Xin Feng, Ping Li, and Wenfang Chen. Cross-modality
+collaborative learning identified pedestrian. The Visual Computer, pages
+1–16, 2022.
+[36] Hu Lu, Xuezhang Zou, and Pingping Zhang.
+Learning progressive
+modality-shared transformers for effective visible-infrared person re-
+identification.
+In Proceedings of the AAAI Conference on Artificial
+Intelligence, volume 37, pages 1835–1843, 2023.
+[37] Shuting He, Hao Luo, Pichao Wang, Fan Wang, Hao Li, and Wei Jiang.
+Transreid: Transformer-based object re-identification.
+In Proceedings
+of the IEEE/CVF international conference on computer vision, pages
+15013–15022, 2021.
+[38] Jiaqi Zhao, Hanzheng Wang, Yong Zhou, Rui Yao, Silin Chen, and Ab-
+dulmotaleb El Saddik. Spatial-channel enhanced transformer for visible-
+infrared person re-identification.
+IEEE Transactions on Multimedia,
+2022.
+[39] Tengfei Liang, Yi Jin, Wu Liu, and Yidong Li. Cross-modality trans-
+former with modality mining for visible-infrared person re-identification.
+IEEE Transactions on Multimedia, 2023.
+[40] Yukang Zhang and Hanzi Wang. Diverse embedding expansion network
+and low-light cross-modality benchmark for visible-infrared person re-
+identification. In Proceedings of the IEEE/CVF Conference on Computer
+Vision and Pattern Recognition, pages 2153–2162, 2023.
+[41] Yujian Feng, Yimu Ji, Fei Wu, Guangwei Gao, Yang Gao, Tianliang
+Liu, Shangdong Liu, Xiao-Yuan Jing, and Jiebo Luo. Occluded visible-
+infrared person re-identification.
+IEEE Transactions on Multimedia,
+2022.
+[42] Minsu Kim, Seungryong Kim, Jungin Park, Seongheon Park, and
+Kwanghoon Sohn.
+Partmix: Regularization strategy to learn part
+discovery for visible-infrared person re-identification. In Proceedings of
+the IEEE/CVF Conference on Computer Vision and Pattern Recognition,
+pages 18621–18632, 2023.
+[43] Qiong Wu, Pingyang Dai, Jie Chen, Chia-Wen Lin, Yongjian Wu, Feiyue
+Huang, Bineng Zhong, and Rongrong Ji.
+Discover cross-modality
+nuances for visible-infrared person re-identification. In Proceedings of
+the IEEE/CVF Conference on Computer Vision and Pattern Recognition,
+pages 4330–4339, 2021.
+[44] Yiyuan Zhang, Yuhao Kang, Sanyuan Zhao, and Jianbing Shen.
+Dual-semantic consistency learning for visible-infrared person re-
+identification. IEEE Transactions on Information Forensics and Security,
+18:1554–1565, 2022.
+[45] Jiawei Feng, Ancong Wu, and Wei-Shi Zheng.
+Shape-erased feature
+learning for visible-infrared person re-identification. In Proceedings of
+the IEEE/CVF Conference on Computer Vision and Pattern Recognition,
+pages 22752–22761, 2023.
+[46] Shang-Hua Gao, Ming-Ming Cheng, Kai Zhao, Xin-Yu Zhang, Ming-
+Hsuan Yang, and Philip Torr.
+Res2net: A new multi-scale backbone
+architecture.
+IEEE transactions on pattern analysis and machine
+intelligence, 43(2):652–662, 2019.
+[47] Tsung-Yi Lin, Piotr Doll´ar, Ross Girshick, Kaiming He, Bharath Hariha-
+ran, and Serge Belongie. Feature pyramid networks for object detection.
+In Proceedings of the IEEE conference on computer vision and pattern
+recognition, pages 2117–2125, 2017.
+[48] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion
+Jones, Aidan N Gomez, Łukasz Kaiser, and Illia Polosukhin. Attention
+is all you need. Advances in neural information processing systems, 30,
+2017.
+[49] Dat Tien Nguyen, Hyung Gil Hong, Ki Wan Kim, and Kang Ryoung
+Park. Person recognition system based on a combination of body images
+from visible light and thermal cameras. Sensors, 17(3):605, 2017.
+[50] Mang Ye, Jianbing Shen, Gaojie Lin, Tao Xiang, Ling Shao, and
+Steven CH Hoi. Deep learning for person re-identification: A survey
+and outlook.
+IEEE transactions on pattern analysis and machine
+intelligence, 44(6):2872–2893, 2021.
+[51] Mang Ye, Xiangyuan Lan, Jiawei Li, and Pong Yuen.
+Hierarchical
+discriminative learning for visible thermal person re-identification. In
+Proceedings of the AAAI conference on artificial intelligence, volume 32,
+2018.
+[52] Mang Ye, Jianbing Shen, David J. Crandall, Ling Shao, and Jiebo Luo.
+Dynamic dual-attentive aggregation learning for visible-infrared person
+re-identification.
+In Computer Vision–ECCV 2020: 16th European
+Conference, Glasgow, UK, August 23–28, 2020, Proceedings, Part XVII
+16, pages 229–247. Springer, 2020.
+[53] Demao Zhang, Zhizhong Zhang, Ying Ju, Cong Wang, Yuan Xie,
+and Yanyun Qu. Dual mutual learning for cross-modality person re-
+identification.
+IEEE Transactions on Circuits and Systems for Video
+Technology, 32(8):5361–5373, 2022.
+[54] Cuiqun Chen, Mang Ye, Meibin Qi, Jingjing Wu, Jianguo Jiang, and
+Chia-Wen Lin.
+Structure-aware positional transformer for visible-
+infrared person re-identification. IEEE Transactions on Image Process-
+ing, 31:2352–2364, 2022.
+[55] Qiang Zhang, Changzhou Lai, Jianan Liu, Nianchang Huang, and
+Jungong Han. Fmcnet: Feature-level modality compensation for visible-
+infrared person re-identification.
+In Proceedings of the IEEE/CVF
+Conference on Computer Vision and Pattern Recognition, pages 7349–
+7358, 2022.
+[56] Jialun Liu, Yifan Sun, Feng Zhu, Hongbin Pei, Yi Yang, and Wenhui Li.
+Learning memory-augmented unidirectional metrics for cross-modality
+person re-identification. In Proceedings of the IEEE/CVF Conference on
+Computer Vision and Pattern Recognition, pages 19366–19375, 2022.
+[57] Yiyuan Zhang, Sanyuan Zhao, Yuhao Kang, and Jianbing Shen. Modal-
+ity synergy complement learning with cascaded aggregation for visible-
+infrared person re-identification. In European Conference on Computer
+Vision, pages 462–479. Springer, 2022.
+[58] Bin Yang, Jun Chen, and Mang Ye. Towards grand unified representation
+learning for unsupervised visible-infrared person re-identification.
+In
+Proceedings of the IEEE/CVF International Conference on Computer
+Vision, pages 11069–11079, 2023.
+[59] Hao Yu, Xu Cheng, Wei Peng, Weihao Liu, and Guoying Zhao.
+Modality unifying network for visible-infrared person re-identification.
+In Proceedings of the IEEE/CVF International Conference on Computer
+Vision, pages 11185–11195, 2023.
+[60] Zhun Zhong, Liang Zheng, Guoliang Kang, Shaozi Li, and Yi Yang.
+Random erasing data augmentation.
+In Proceedings of the AAAI
+conference on artificial intelligence, volume 34, pages 13001–13008,
+2020.
+[61] Yukang Zhang, Yan Yan, Yang Lu, and Hanzi Wang. Towards a unified
+middle modality learning for visible-infrared person re-identification. In
+Proceedings of the 29th ACM International Conference on Multimedia,
+pages 788–796, 2021.
+[62] Mouxing Yang, Zhenyu Huang, Peng Hu, Taihao Li, Jiancheng Lv, and
+Xi Peng. Learning with twin noisy labels for visible-infrared person re-
+identification. In Proceedings of the IEEE/CVF conference on computer
+vision and pattern recognition, pages 14308–14317, 2022.
